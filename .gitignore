@@ -5,6 +5,9 @@
 # IntelliJ project files
 .idea
 .gitignore
+data
+raw
+TODO.txt
 **/__pycache__
 *.iml
 out
