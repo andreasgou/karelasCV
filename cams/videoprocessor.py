@@ -28,6 +28,8 @@ class VideoProcessor:
 		self.refPt = []
 		self.cropping = False
 		self.selection = False
+		self.movePt = []
+		self.move = False
 	
 	def init_video_monitor(self):
 		# construct empty image
@@ -37,13 +39,13 @@ class VideoProcessor:
 		# Initialize openCV image window
 		cv2.namedWindow(self.winname, cv2.WINDOW_AUTOSIZE)
 		cv2.moveWindow(self.winname, 0, 0)
-		cv2.setMouseCallback(self.winname, self.click_and_crop)
+		cv2.setMouseCallback(self.winname, self.mouse_control)
 		self.imgshow(blank_image)
 		
 		cv2.waitKey(1)
 	
 	def use(self, dialog, length, stream):
-		if self.cropping:
+		if self.cropping or self.move:
 			return
 		
 		if self.camtype == 1:
@@ -127,7 +129,7 @@ class VideoProcessor:
 			hist = hf.get_histogram_image(img, self.histogram)
 			cv2.imshow(wname, hist)
 			
-	def click_and_crop(self, event, x, y, flags, param):
+	def mouse_control(self, event, x, y, flags, param):
 		# if the left mouse button was clicked, record the starting
 		# (x, y) coordinates and indicate that cropping is being
 		# performed
@@ -137,24 +139,48 @@ class VideoProcessor:
 				print("\r           source: ({}, {})\n> ".format(self.last_frame.shape[1], self.last_frame.shape[0]), end='')
 				print("\r          preview: ({}, {})\n> ".format(self.winsize[1], self.winsize[0]), end='')
 				return
+		
+			# Mouse pointer position-based actions
+			if self.selection \
+					and self.refPt[0][0] < x < self.refPt[1][0] \
+					and self.refPt[0][1] < y < self.refPt[1][1]:
+
+				self.save_frame = self.last_frame.copy()
+				self.movePt = [x, y]
+				self.move = True
+				print("\r[debug] move selection: {} x {}    ".format(x, y), end='')
+				return
 			
+			self.save_frame = self.last_frame.copy()
 			self.selection = False
 			self.refPt = [(x, y)]
 			self.cropping = True
 		
 		# check to see if the left mouse button was released
 		elif event == cv2.EVENT_LBUTTONUP:
+			# Selection not permitted if preview image is resized
 			if self.winsize != self.last_frame.shape[:2]:
 				return
+
 			# Reset selection when clicked into
-			if self.refPt[0] == (x, y):
+			if self.refPt[0] == (x, y) or (self.move and tuple(self.movePt) == (x, y)):
 				self.cropping = False
 				self.selection = False
+				self.move = False
 				self.refPt = []
 				print("\r[info] mask removed\n> ", end='')
 				self.imgshow(self.last_frame)
 				return
-			
+				
+			if self.move:
+				posX = x - self.movePt[0]
+				posY = y - self.movePt[1]
+				self.refPt[0] = (self.refPt[0][0] + posX, self.refPt[0][1] + posY)
+				self.refPt[1] = (self.refPt[1][0] + posX, self.refPt[1][1] + posY)
+				self.movePt = []
+				self.move = False
+				return
+				
 			# record the ending (x, y) coordinates and indicate that
 			# the cropping operation is finished
 			self.refPt.append((x, y))
@@ -163,18 +189,33 @@ class VideoProcessor:
 			
 			# draw a rectangle around the region of interest
 			print("\r[info] mask created: {} x {}          \n> ".format(x-self.refPt[0][0], y-self.refPt[0][1]), end='')
-			img = self.last_frame.copy()
+			img = self.save_frame.copy()
 			self.imgshow(img)
 		
 			# key = cv2.waitKey(1) & 0xFF
 		
 		elif event == cv2.EVENT_MOUSEMOVE:
-			if not self.cropping:
+			if self.cropping:
+				tl = self.refPt[0]
+				br = (x, y)
+				print("\r[debug] mask dimensions: {} x {}    ".format(br[0]-tl[0], br[1]-tl[1]), end='')
+				img = self.save_frame.copy()
+				cv2.rectangle(img, tl, br, (255, 0, 0), 1)
+				self.imgshow(img)
 				return
-			print("\r[debug] mask dimensions: {} x {}    ".format(x-self.refPt[0][0], y-self.refPt[0][1]), end='')
-			img = self.last_frame.copy()
-			cv2.rectangle(img, self.refPt[0], (x, y), (255, 0, 0), 1)
-			self.imgshow(img)
+			
+			if self.move:
+				posX = x - self.movePt[0]
+				posY = y - self.movePt[1]
+				tl = (self.refPt[0][0] + posX, self.refPt[0][1] + posY)
+				br = (self.refPt[1][0] + posX, self.refPt[1][1] + posY)
+				# print("\r[debug] move selection to: {} x {}    ".format(posX, posY), end='')
+				print("\r[debug] move selection to: {} x {}    ".format(tl, br), end='')
+				img = self.save_frame.copy()
+				cv2.rectangle(img, tl, br, (255, 0, 0), 1)
+				self.imgshow(img)
+				return
+				
 	
 	def get_plugin(self, handler):
 		retval = None
