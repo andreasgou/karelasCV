@@ -17,6 +17,7 @@ class BuildinCamera(Thread):
 		self.setfname = None
 		self.state = 'init'
 		self.video_port = False
+		self.video_path = None
 		self.frame_no = 0
 		self.streamLength = 0
 		self.stm = time.time()
@@ -31,7 +32,8 @@ class BuildinCamera(Thread):
 		             'zoom'         : (0.0, 0.0, 1.0, 1.0)
 		             }
 	
-	def init_socket(self, confirm):
+	def init_socket(self, video_path=None):
+		self.video_path = video_path
 		ret = self.init_camera(self)
 		self.start()
 		return ret
@@ -42,7 +44,10 @@ class BuildinCamera(Thread):
 				self.conf = conf
 			
 			self.setfname = self.conf['file_name'] if 'file_name' in conf else fname
-			self.camera = cv2.VideoCapture(0)
+			if self.video_path is None:
+				self.camera = cv2.VideoCapture(0)
+			else:
+				self.camera = cv2.VideoCapture(self.video_path)
 			# set default camera properties
 			# if 'video_port' in conf:
 			#     self.video_port = self.conf['video_port']
