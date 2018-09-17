@@ -19,15 +19,16 @@ class StreamClient(Thread):
 		# self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self.socket.settimeout(60)
 		self.terminate = hdl_terminate
+		self.pause = False
+		self.pause_time = 0.0
 	
-	def init_socket(self, confirm):
+	def init_socket(self):
 		try:
 			self.socket.connect((self.host, self.port))
-			if confirm:
-				self.status = 'negotiate'
-				data = netCatch(self.socket)
-				if data:
-					netThrow(self.socket, "stream-listener")
+			self.status = 'negotiate'
+			data = netCatch(self.socket)
+			if data:
+				netThrow(self.socket, "stream-listener")
 			# Make a file-like object
 			self.pipe = self.socket.makefile('rb')
 			self.start()
@@ -45,6 +46,9 @@ class StreamClient(Thread):
 	
 	def run(self):
 		while True:
+			if self.pause:
+				continue
+			
 			(ln, data) = binCatch(self.pipe)
 			if self.status == 'purge':
 				# consume all data from the pipe
@@ -77,6 +81,7 @@ class StreamClient(Thread):
 		self.consumer = consumer
 	
 	def close(self):
+		print("Closing data stream..")
 		if self.status != 'failed':
 			self.status == 'purge'
 			self.pipe.flush()

@@ -1,5 +1,6 @@
 import sys
 import time
+import cv2
 from threading import *
 from imutils import paths
 from utils.datasets import SimpleDatasetLoader
@@ -12,7 +13,7 @@ from .helper_sockets import *
 # ------------------------------------------------------------------
 class StreamFileListClient(Thread):
 	
-	def __init__(self, host, port, path, hdl_terminate):
+	def __init__(self, dim, path, hdl_terminate):
 		Thread.__init__(self)
 		self.status = "init"
 		self.pipe = None
@@ -21,21 +22,25 @@ class StreamFileListClient(Thread):
 		self.data = None
 		self.idletime = 5
 		self.terminate = hdl_terminate
+		self.dim = dim
 	
-	def init_socket(self, confirm):
+	def init_socket(self):
 		try:
 			imagePaths = list(paths.list_images(self.path))
 			# aqcuire first image dimensions and use them for all
 			imagePath = imagePaths[0].replace("\\ ", " ")
 			img = cv2.imread(imagePath)
-			iH, iW = img.shape[:2]
+			if self.dim is None:
+				self.dim = img.shape[:2]
+			else:
+				self.dim = (self.dim[1], self.dim[0])
 			# initialize the image preprocessors
-			sp = SimplePreprocessor(iW, iH)
+			sp = SimplePreprocessor(self.dim[1], self.dim[0])
 			# iap = ImageToArrayPreprocessor()
 			
 			sdl = SimpleDatasetLoader(preprocessors=[sp])
 			# sdl = SimpleDatasetLoader()
-			(data, labels) = sdl.load(imagePaths, verbose=100)
+			(data, labels, _) = sdl.load(imagePaths, verbose=100)
 			# data = data.astype("float") / 255.0
 
 			if len(data) > 0:
@@ -68,6 +73,7 @@ class StreamFileListClient(Thread):
 					if self.status == 'purge':
 						# consume all data from the pipe
 						# self.pipe.flush()
+						self.consumer = None
 						print("[info] (StreamClient.run) : Video stream purged")
 						break
 					
@@ -85,9 +91,11 @@ class StreamFileListClient(Thread):
 					time.sleep(self.idletime)
 					
 				if self.status == 'purge':
+					self.consumer = None
+					print("[info] (StreamClient.run) : Video stream purged")
 					break
 
-			except:
+			except UserWarning:
 				print("[error] stream failed: ", sys.exc_info()[0])
 				self.status = 'failed'
 				self.close()
@@ -100,7 +108,9 @@ class StreamFileListClient(Thread):
 		self.consumer = consumer
 	
 	def close(self):
-		self.status = "init"
+		print("Closing data stream..")
+		while self.status != "init":
+			time.sleep(1)
 		print("Stream socket closed")
 	
 	def purge_negotiate(self):

@@ -16,5 +16,4 @@ class SimplePreprocessor:
 		# ret, image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 		# resize the image to a fixed size, ignoring the aspect
 		# ratio
-		return cv2.resize(image, (self.width, self.height),
-			interpolation=self.inter)
+		return cv2.resize(image, (self.width, self.height), interpolation=self.inter)

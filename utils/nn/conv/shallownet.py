@@ -19,15 +19,17 @@ class ShallowNet:
 			inputShape = (depth, height, width)
 
 		# define the first (and only) CONV => RELU layer
-		model.add(Conv2D(32, (3, 3), padding="same",
-			input_shape=inputShape))
+		model.add(Conv2D(32, (3, 3), padding="same", input_shape=inputShape))
 		model.add(Activation("relu"))
 
 		# softmax classifier
 		model.add(Flatten())
-		# model.add(Dense(classes))
-		model.add(Dense(classes))
-		model.add(Activation("softmax"))
+		if classes == 2:
+			model.add(Dense(1))
+			model.add(Activation("sigmoid"))
+		else:
+			model.add(Dense(classes))
+			model.add(Activation("softmax"))
 
 		# return the constructed network architecture
 		return model

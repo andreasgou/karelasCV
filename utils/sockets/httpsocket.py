@@ -1,5 +1,10 @@
 import sys
 from threading import *
+import requests
+import numpy as np
+import cv2
+import time
+import json
 
 from .helper_sockets import *
 
@@ -20,17 +25,12 @@ class StreamHttpClient(Thread):
 		self.timeout = 60
 		self.cache = bytearray()
 		self.terminate = hdl_terminate
+		self.pause = False
+		self.pause_time = 0.0
 	
-	def init_socket(self, confirm):
+	def init_socket(self):
 		try:
-			# if confirm:
-			#     print("[info] Connected. Getting video stream..")
-			#     self.status = 'negotiate'
-			#     self.status = 'running'
-			#     self.socket.sendall("GET {} HTTP/1.1\r\n\r\n".format(self.path).encode('utf-8'))
-			# Make a file-like object
-			# self.pipe = self.socket.makefile('rb')
-			(ln, data, self.cache) = jpgStream(self.url, self.cache)
+			(ln, data, self.cache) = self.read_jpg_stream(self.url, self.cache)
 			if ln > 0:
 				print("[info] Opening {}".format(self.url))
 				self.status = 'running'
@@ -54,13 +54,16 @@ class StreamHttpClient(Thread):
 		# class variable to be used for video stream only
 		self.cache = bytearray()
 		while True:
+			if self.pause:
+				continue
+			
 			try:
 				(ln, data, self.cache) = self.read_jpg_stream(self.url, self.cache)
 				if self.status == 'purge':
 					# consume all data from the pipe
 					# self.pipe.flush()
 					print("[info] (StreamClient.run) : Video stream purged")
-					continue
+					break
 				
 				# print("  ", self.status, ln, data)
 				if ln > 0:
@@ -83,6 +86,7 @@ class StreamHttpClient(Thread):
 					# pass control to the custom terminate handler
 					# self.terminate()
 					break
+
 			except TimeoutError:
 				print("[error] stream failed: ", sys.exc_info()[0])
 				self.status = 'failed'
@@ -96,7 +100,9 @@ class StreamHttpClient(Thread):
 		self.consumer = consumer
 	
 	def close(self):
-		self.status = "init"
+		print("Closing data stream..")
+		while self.status != "init":
+			time.sleep(1)
 		print("Stream socket closed")
 	
 	def purge_negotiate(self):
@@ -114,11 +120,46 @@ class StreamHttpClient(Thread):
 			
 			return stream_len, stream, bt
 		except requests.exceptions.ConnectionError:
-			print("[error] (jpgStream) : connection error: ", sys.exc_info()[0])
+			print("[error] (read_jpg_stream) : connection error: ", sys.exc_info()[0])
 			return 0, None, None
 		except:
-			print("[error] (jpgStream) : stream failed: ", sys.exc_info())
+			print("[error] (read_jpg_stream) : stream failed: ", sys.exc_info())
 			return 0, None, None
+	
+	def set_command(self, cmd, args):
+		if cmd == "get":
+			url = "http://" + self.host + ":" + str(self.port) + "/status.json?show_avail=0"
+			res = requests.get(url)
+			obj = json.loads(res.content)
+			if len(args) > 1:
+				field = args[1]
+				obj = obj["curvals"][field]
+			else:
+				field = "all"
+				obj = obj["curvals"]
+			print("Current setting for {}: {}".format(field, obj))
 
+		elif cmd == "set":
+			if len(args) < 3:
+				url = "http://" + self.host + ":" + str(self.port) + "/status.json?show_avail=1"
+				res = requests.get(url)
+				obj = json.loads(res.content)
+				if len(args) == 1:
+					print("Available fields:\n{}".format([s for s in obj["avail"].keys()]))
+				else:
+					field = args[1]
+					print("Available values for {}: {}".format(field, obj["avail"][field]))
+				return
+
+			field = args[1]
+			value = args[2]
+			if field == "focus":
+				value = "nofocus" if value == "off" else "focus"
+				url = "http://{}:{}/{}".format(self.host, str(self.port), value)
+			else:
+				url = "http://{}:{}/settings/{}?set={}".format(self.host, str(self.port), field, value)
+			res = requests.get(url)
+			print(res.content)
+	
 		
 

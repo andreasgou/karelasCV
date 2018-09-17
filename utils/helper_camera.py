@@ -258,7 +258,8 @@ def get_picam(conf):
 		camera.shutter_speed = camera.exposure_speed
 	else:
 		camera.shutter_speed = conf['shutter_speed']
-		camera.exposure_mode = 'off'
+		# camera.exposure_mode = 'off'
+	# print("Exposure mode set to {}. Current setting is {}".format(conf['exposure_mode'], camera.exposure_mode))
 	
 	# Final color adjustments
 	# camera.contrast = 50
