@@ -9,7 +9,7 @@ import numpy as np
 import time
 from PIL import Image
 
-from utils import helper_sockets as socs
+from utils.sockets.httpsocket import StreamHttpClient
 
 # Socket plugin functions
 # ---------------
@@ -132,12 +132,12 @@ def video_start(pihost, piport, pipath, hw_quit):
 	video_monitor = VideoProcessor(winname, winsize)
 	
 	# initialize video stream and player
-	video_so = socs.StreamHttpClient(pihost, piport, pipath, hw_quit)
+	video_so = StreamHttpClient(pihost, piport, pipath, hw_quit)
 	video_so.set_consumer(video_monitor.use)
 	
 	# print("[info] Initializing video stream. Socket timeout: {}".format(video_so.socket.gettimeout()))
 	print("[info] Initializing video stream. Socket timeout: {}".format(video_so.timeout))
-	if video_so.init_socket(True) == 'failed':
+	if video_so.init_socket() == 'failed':
 		print("[error]: Unable to create video binary stream!")
 		video_so.close()
 		return False

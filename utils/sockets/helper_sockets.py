@@ -6,9 +6,12 @@ import time
 
 import platform
 # RaspberryPi B+ : excluded imports
+#
 if platform.machine() != 'armv6l':
-	# Required so that openCV can display with imshow in multiple threads
-	from matplotlib import pyplot as plt
+	# Required from a virtualenv for openCV to display with imshow in multiple threads
+	import matplotlib
+	matplotlib.use('TkAgg')
+# 	from matplotlib import pyplot as plt
 
 
 # Callback Function that does nothing
@@ -22,6 +25,7 @@ def nothing(*arg):
 #   Since .accept() method returns an original socket obj, we can use
 #   the .copy() method to cast it into a SocketDescriptor
 #   Another way would be to override .accept()
+# Credits to augurar: https://stackoverflow.com/a/45209878/7521854
 class SocketDescriptor(socket.socket):
 	def __init__(self, *args, **kwargs):
 		super(SocketDescriptor, self).__init__(*args, **kwargs)
@@ -32,11 +36,11 @@ class SocketDescriptor(socket.socket):
 		self.c_fstream = None
 	
 	@classmethod
-	def copy(cls, sock):
+	def copy(self, sock):
 		fd = socket.dup(sock.fileno())
-		copy = cls(sock.family, sock.type, sock.proto, fileno=fd)
-		copy.settimeout(sock.gettimeout())
-		return copy
+		nsoc = self(sock.family, sock.type, sock.proto, fileno=fd)
+		nsoc.settimeout(sock.gettimeout())
+		return nsoc
 
 
 # Open a socket listening for connections on address = (interface-ip port)

@@ -1,6 +1,8 @@
 import os
 import datetime
 import argparse
+import asyncio
+from aioconsole import ainput
 
 from cams import VideoProcessor
 from utils.plugins.imfilters import *
@@ -237,7 +239,6 @@ def video_start(pihost, piport, pipath, hw_quit, args):
 			# send and wait for the reply
 			hostso.send("start", wait=True)
 
-
 def video_stop():
 	global video_so, video_monitor
 	
@@ -328,6 +329,113 @@ Default commands:
 				"list"      : List active filters
 """)
 
+async def input_async(prompt):
+	q = ""
+	while q.lower() not in {'quit'}:
+		q = await ainput(prompt)
+		if force_quit:
+			quit()
+		if q.rstrip() != '':
+			qr = q.rstrip().split(' ')
+			q = ' '.join(str(x) for x in qr)
+			
+			# video states
+			if qr[0] == 'quit':
+				video_stop()
+				if cam_type == 0:
+					# send and wait for the reply
+					hostso.send(q, wait=True)
+			
+			elif qr[0] == 'start':
+				video_start(pihost, piport, pipath, hw_quit, args)
+			elif qr[0] == 'stop':
+				video_stop()
+			elif qr[0] == 'pause':
+				video_pause()
+			elif qr[0] == 'resize':
+				video_resize(video_monitor, qr)
+			elif qr[0] == 'histogram':
+				video_histogram(video_monitor, qr)
+			
+			# Plugins (one condition)
+			elif qr[0] == 'grid':
+				video_monitor.append_plugin(plugin_grid, qr)
+				print("Plugin {} enabled".format(q))
+			
+			elif qr[0] == 'checker':
+				video_monitor.append_plugin(plugin_checker, qr)
+				print("Plugin {} enabled".format(q))
+			
+			elif qr[0] == 'filter':
+				if len(qr) < 2:
+					print("[error]: Filter not defined\nUsage: filter {}"
+					      .format("|".join(key for key in filter_bank)))
+				elif qr[1] not in filter_bank:
+					print("[error]: Invalid filter {}\nUsage: filter {}> "
+					      .format(qr[1], "|".join(key for key in filter_bank)))
+				else:
+					plugin_filter(video_monitor, qr)
+			
+			elif qr[0] == 'roi':
+				hdr_roi_select(video_monitor, video_monitor.save_frame, None)
+			
+			# Actions (two words)
+			elif qr[0] == 'grab':
+				video_monitor.set_action(action_grab, qr)
+			elif qr[0] == 'blocks':
+				video_monitor.set_action(action_blocks, qr)
+			elif qr[0] == 'windows':
+				video_monitor.set_action(action_windows, qr)
+			elif qr[0] == 'stitch':
+				video_monitor.set_action(action_stitching, qr)
+			elif qr[0] == 'gui':
+				# TODO: action GUI under development
+				action_gui()
+			elif qr[0] == 'help':
+				show_help()
+			elif q == 'action stop':
+				# Cancel running action
+				video_monitor.set_action(None, qr)
+				print("[info] active action canceled")
+			
+			# Anything else just send it over
+			else:
+				if cam_type == 0:
+					# send and wait for the reply
+					hostso.send(q, wait=True)
+				elif cam_type == 1:
+					if qr[0] in ['get', 'set']:
+						video_so.set_command(qr[0], qr)
+				elif cam_type == 2:
+					if q.startswith('set idle'):
+						if len(qr) > 2:
+							video_so.idletime = float(qr[2])
+				elif cam_type == 3:
+					if q.startswith('set res'):
+						video_so.set_command("res", [qr[2], qr[3]])
+					elif q.startswith('set idle'):
+						if len(qr) > 2:
+							video_so.idletime = float(qr[2])
+		else:
+			# if object tracker (CMT filter) is active, switch debug on/off by hitting return
+			if video_monitor is not None:
+				plugin = video_monitor.get_plugin(hdr_tracker_cmt)
+				if plugin is not None:
+					plugin[2][1] = not plugin[2][1]
+
+async def display_img():
+	while True:
+		if not video_monitor.queue.empty():
+			win, img = video_monitor.queue.get()
+			cv2.imshow(win, img)
+			cv2.waitKey(1)
+		await asyncio.sleep(1)
+		
+async def main():
+	await asyncio.gather(
+		display_img(),
+		input_async("> ")
+	)
 
 # Parse command line arguments
 # ----------------------------
@@ -385,104 +493,107 @@ video_monitor.camtype = cam_type
 if args.fit and cam_type != 2:
 	plugin_filter(video_monitor, "filter resize {} {}".format(winsize[0], winsize[1]).split())
 
+asyncio.run(main())
 
 # Enter interactive console mode.
 # Type 'quit' to exit
-q = ""
-while q.lower() not in {'quit'}:
-	q = input("> ")
-	if force_quit:
-		quit()
-	if q.rstrip() != '':
-		qr = q.rstrip().split(' ')
-		q = ' '.join(str(x) for x in qr)
-		
-		# video states
-		if qr[0] == 'quit':
-			video_stop()
-			if cam_type == 0:
-				# send and wait for the reply
-				hostso.send(q, wait=True)
 
-		elif qr[0] == 'start':
-			video_start(pihost, piport, pipath, hw_quit, args)
-		elif qr[0] == 'stop':
-			video_stop()
-		elif qr[0] == 'pause':
-			video_pause()
-		elif qr[0] == 'resize':
-			video_resize(video_monitor, qr)
-		elif qr[0] == 'histogram':
-			video_histogram(video_monitor, qr)
-
-		# Plugins (one condition)
-		elif qr[0] == 'grid':
-			video_monitor.append_plugin(plugin_grid, qr)
-			print("Plugin {} enabled".format(q))
-
-		elif qr[0] == 'checker':
-			video_monitor.append_plugin(plugin_checker, qr)
-			print("Plugin {} enabled".format(q))
-
-		elif qr[0] == 'filter':
-			if len(qr) < 2:
-				print("[error]: Filter not defined\nUsage: filter {}"
-				      .format("|".join(key for key in filter_bank)))
-			elif qr[1] not in filter_bank:
-				print("[error]: Invalid filter {}\nUsage: filter {}> "
-				      .format(qr[1], "|".join(key for key in filter_bank)))
-			else:
-				plugin_filter(video_monitor, qr)
-
-		elif qr[0] == 'roi':
-			hdr_roi_select(video_monitor, video_monitor.save_frame, None)
-
-		# Actions (two words)
-		elif qr[0] == 'grab':
-			video_monitor.set_action(action_grab, qr)
-		elif qr[0] == 'blocks':
-			video_monitor.set_action(action_blocks, qr)
-		elif qr[0] == 'windows':
-			video_monitor.set_action(action_windows, qr)
-		elif qr[0] == 'stitch':
-			video_monitor.set_action(action_stitching, qr)
-		elif qr[0] == 'gui':
-			# TODO: action GUI under development
-			action_gui()
-		elif qr[0] == 'help':
-			show_help()
-		elif q == 'action stop':
-			# Cancel running action
-			video_monitor.set_action(None, qr)
-			print("[info] active action canceled")
-
-		# Anything else just send it over
-		else:
-			if cam_type == 0:
-				# send and wait for the reply
-				hostso.send(q, wait=True)
-			elif cam_type == 1:
-				if qr[0] in ['get', 'set']:
-					video_so.set_command(qr[0], qr)
-			elif cam_type == 2:
-				if q.startswith('set idle'):
-					if len(qr) > 2:
-						video_so.idletime = float(qr[2])
-			elif cam_type == 3:
-				if q.startswith('set res'):
-					video_so.set_command("res", [qr[2], qr[3]])
-				elif q.startswith('set idle'):
-					if len(qr) > 2:
-						video_so.idletime = float(qr[2])
-	else:
-		# if object tracker (CMT filter) is active, switch debug on/off by hitting return
-		if video_monitor is not None:
-			plugin = video_monitor.get_plugin(hdr_tracker_cmt)
-			if plugin is not None:
-				plugin[2][1] = not plugin[2][1]
+# q = ""
+# while q.lower() not in {'quit'}:
+# 	q = input("> ")
+# 	if force_quit:
+# 		quit()
+# 	if q.rstrip() != '':
+# 		qr = q.rstrip().split(' ')
+# 		q = ' '.join(str(x) for x in qr)
+#
+# 		# video states
+# 		if qr[0] == 'quit':
+# 			video_stop()
+# 			if cam_type == 0:
+# 				# send and wait for the reply
+# 				hostso.send(q, wait=True)
+#
+# 		elif qr[0] == 'start':
+# 			video_start(pihost, piport, pipath, hw_quit, args)
+# 		elif qr[0] == 'stop':
+# 			video_stop()
+# 		elif qr[0] == 'pause':
+# 			video_pause()
+# 		elif qr[0] == 'resize':
+# 			video_resize(video_monitor, qr)
+# 		elif qr[0] == 'histogram':
+# 			video_histogram(video_monitor, qr)
+#
+# 		# Plugins (one condition)
+# 		elif qr[0] == 'grid':
+# 			video_monitor.append_plugin(plugin_grid, qr)
+# 			print("Plugin {} enabled".format(q))
+#
+# 		elif qr[0] == 'checker':
+# 			video_monitor.append_plugin(plugin_checker, qr)
+# 			print("Plugin {} enabled".format(q))
+#
+# 		elif qr[0] == 'filter':
+# 			if len(qr) < 2:
+# 				print("[error]: Filter not defined\nUsage: filter {}"
+# 				      .format("|".join(key for key in filter_bank)))
+# 			elif qr[1] not in filter_bank:
+# 				print("[error]: Invalid filter {}\nUsage: filter {}> "
+# 				      .format(qr[1], "|".join(key for key in filter_bank)))
+# 			else:
+# 				plugin_filter(video_monitor, qr)
+#
+# 		elif qr[0] == 'roi':
+# 			hdr_roi_select(video_monitor, video_monitor.save_frame, None)
+#
+# 		# Actions (two words)
+# 		elif qr[0] == 'grab':
+# 			video_monitor.set_action(action_grab, qr)
+# 		elif qr[0] == 'blocks':
+# 			video_monitor.set_action(action_blocks, qr)
+# 		elif qr[0] == 'windows':
+# 			video_monitor.set_action(action_windows, qr)
+# 		elif qr[0] == 'stitch':
+# 			video_monitor.set_action(action_stitching, qr)
+# 		elif qr[0] == 'gui':
+# 			# TODO: action GUI under development
+# 			action_gui()
+# 		elif qr[0] == 'help':
+# 			show_help()
+# 		elif q == 'action stop':
+# 			# Cancel running action
+# 			video_monitor.set_action(None, qr)
+# 			print("[info] active action canceled")
+#
+# 		# Anything else just send it over
+# 		else:
+# 			if cam_type == 0:
+# 				# send and wait for the reply
+# 				hostso.send(q, wait=True)
+# 			elif cam_type == 1:
+# 				if qr[0] in ['get', 'set']:
+# 					video_so.set_command(qr[0], qr)
+# 			elif cam_type == 2:
+# 				if q.startswith('set idle'):
+# 					if len(qr) > 2:
+# 						video_so.idletime = float(qr[2])
+# 			elif cam_type == 3:
+# 				if q.startswith('set res'):
+# 					video_so.set_command("res", [qr[2], qr[3]])
+# 				elif q.startswith('set idle'):
+# 					if len(qr) > 2:
+# 						video_so.idletime = float(qr[2])
+# 	else:
+# 		# if object tracker (CMT filter) is active, switch debug on/off by hitting return
+# 		if video_monitor is not None:
+# 			plugin = video_monitor.get_plugin(hdr_tracker_cmt)
+# 			if plugin is not None:
+# 				plugin[2][1] = not plugin[2][1]
 		
 
 # Close connection
+
 if cam_type == 0:
 	hostso.close()
 print("Bye..")

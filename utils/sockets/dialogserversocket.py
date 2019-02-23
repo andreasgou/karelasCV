@@ -24,6 +24,7 @@ class DialogServer:
 		self.srvsock.listen(2)
 		
 		self.descriptors = [self.srvsock]
+		self.outputs = []
 		self.streams = []
 		self.commands = {}
 		self.private = private

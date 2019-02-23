@@ -7,10 +7,14 @@ import cv2
 import time
 import datetime
 from PIL import Image
+import queue
 
 from utils import helper_visuals as iv
 from utils import cvhist as hf
 
+# Thread free for UI
+# import matplotlib
+# matplotlib.use('TkAgg')
 
 class VideoProcessor:
 	
@@ -38,6 +42,7 @@ class VideoProcessor:
 		self.tracker = None
 		self.movePt = []
 		self.move = False
+		self.queue = queue.Queue()
 	
 	def init_video_monitor(self):
 		# construct empty image
@@ -89,7 +94,7 @@ class VideoProcessor:
 				traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout)
 				print("\n[warning] Plugin {} is not functional, trying to remove..".format(plugin[1]))
 				self.remove_plugin(plugin[0])
-		
+				
 		if self.action:
 			itr = 0
 			try:
@@ -202,11 +207,17 @@ class VideoProcessor:
 			c = self.adjust_coords(imshape, [self.tracker.tl, self.tracker.br])
 			# cv2.rectangle(img, self.tracker.tl, self.tracker.br, (0, 255, 0), 1)
 			cv2.rectangle(img, c[0], c[1], (0, 255, 0), 1)
-		
-		cv2.imshow(self.winname, img)
+			
+		# print("[debug] calling cv2.imshow..")
+		self.queue.put((self.winname, img))
+		# cv2.imshow(self.winname, img)
+		# print("[debug] calling cv2.waitKet..")
+		# cv2.waitKey(1)
+
 		if self.histogram is not None:
 			hist = hf.get_histogram_image(img, self.histogram)
-			cv2.imshow("Histogram", hist)
+			self.queue.put(("Histogram", hist))
+			# cv2.imshow("Histogram", hist)
 			
 	def mouse_control(self, event, x, y, flags, param):
 		# if the left mouse button was clicked, record the starting

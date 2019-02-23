@@ -344,7 +344,6 @@ class PICameraServer(Thread):
 				for foo in self.camera.capture_continuous(stream, 'jpeg', use_video_port=self.video_port):
 					self.frame_no += 1
 					self.streamLength = stream.tell()
-		
 					
 					# Write the length of the capture to the stream
 					self.stream.write(struct.pack('<L', self.streamLength))
