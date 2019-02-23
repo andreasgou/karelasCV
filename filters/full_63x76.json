@@ -1,0 +1,15 @@
+[
+    [
+        "filter",
+        "canny"
+    ],
+    [
+        "filter",
+        "dilate",
+        "3"
+    ],
+    [
+        "filter",
+        "blur"
+    ]
+]

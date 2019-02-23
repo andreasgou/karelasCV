@@ -1,0 +1,20 @@
+[
+    [
+        "filter",
+        "threshold",
+        "adapt-gauss"
+    ],
+    [
+        "filter",
+        "erode",
+        "2"
+    ],
+    [
+        "filter",
+        "contours",
+        "rl=-2.5",
+        "rh=-2",
+        "al=200",
+        "ah=250"
+    ]
+]

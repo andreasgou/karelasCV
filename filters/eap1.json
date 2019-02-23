@@ -1,0 +1,22 @@
+[
+    [
+        "filter",
+        "rotate",
+        "10"
+    ],
+    [
+        "filter",
+        "sobel",
+        "3"
+    ],
+    [
+        "filter",
+        "noise",
+        "50",
+        "80"
+    ],
+    [
+        "filter",
+        "inverse"
+    ]
+]
