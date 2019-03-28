@@ -6,8 +6,6 @@ from aioconsole import ainput
 
 import sys
 import select
-import tty
-import termios
 
 from cams import VideoProcessor
 from utils.plugins.imfilters import *
@@ -27,6 +25,16 @@ from utils import helper_visuals as iv
 # Formatter subclass for argparse. It is used to combine functionality of both classes defined.
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.MetavarTypeHelpFormatter):
 	pass
+
+# non-blocking console
+if os.name == 'nt':
+	import msvcrt
+else:
+	import tty
+	import termios
+
+print('OS:', os.name)
+
 
 # Socket plugin functions
 # ---------------
@@ -338,12 +346,22 @@ Default commands:
 
 def tty_getData(buffer):
 	cmd = None
-	if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
-		c = sys.stdin.read(1)
-		if ord(c) == 10:        # linefeed
+	kb_hit = False
+	if os.name == 'nt':
+		kb_hit = msvcrt.kbhit()
+	else:
+		kb_hit = select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
+
+	if kb_hit:
+		if os.name == 'nt':
+			c = msvcrt.getch().decode('utf-8')
+		else:
+			c = sys.stdin.read(1)
+
+		if ord(c) == 10 or ord(c) == 13:        # linefeed
 			cmd = buffer
 			buffer = ""
-			sys.stdout.write(c)
+			sys.stdout.write(crlf)
 		elif ord(c) == 127:     # backspace
 			buffer = buffer[:-1]
 			sys.stdout.write("\b \b")
@@ -457,8 +475,9 @@ def input_async(prompt, q):
 # async def display_img():
 def main_loop():
 	# Setup non-blocking console
-	tty_old_settings = termios.tcgetattr(sys.stdin)
-	tty.setcbreak(sys.stdin.fileno())
+	if os.name != 'nt':
+		tty_old_settings = termios.tcgetattr(sys.stdin)
+		tty.setcbreak(sys.stdin.fileno())
 
 	buffer = ""
 	cmd = None
@@ -483,7 +502,8 @@ def main_loop():
 		
 	finally:
 		# Restore tty settings
-		termios.tcsetattr(sys.stdin, termios.TCSADRAIN, tty_old_settings)
+		if os.name != 'nt':
+			termios.tcsetattr(sys.stdin, termios.TCSADRAIN, tty_old_settings)
 
 
 async def main():
@@ -523,6 +543,8 @@ winsize = tuple(args.wsize)
 force_quit = False
 video_so = None
 video_monitor = None
+
+crlf = "\r\n" if os.name == 'nt' else "\n"
 
 if cam_type == 1:
 	pipath = "/shot.jpg"
