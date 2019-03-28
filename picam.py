@@ -336,14 +336,17 @@ Default commands:
 """)
 
 
-def tty_getData(prompt, buffer):
+def tty_getData(buffer):
 	cmd = None
 	if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
 		c = sys.stdin.read(1)
-		if ord(c) == 10:
+		if ord(c) == 10:        # linefeed
 			cmd = buffer
 			buffer = ""
-			sys.stdout.write(c+prompt)
+			sys.stdout.write(c)
+		elif ord(c) == 127:     # backspace
+			buffer = buffer[:-1]
+			sys.stdout.write("\b \b")
 		else:
 			buffer += c
 			sys.stdout.write(c)
@@ -353,7 +356,7 @@ def tty_getData(prompt, buffer):
 
 
 # async def input_async(prompt):
-def input_async(q):
+def input_async(prompt, q):
 
 	# q = ""
 	# while q.lower() not in {'quit'}:
@@ -459,6 +462,8 @@ def main_loop():
 
 	buffer = ""
 	cmd = None
+	sys.stdout.write("> ")
+	sys.stdout.flush()
 
 	try:
 		while cmd is None:
@@ -467,12 +472,14 @@ def main_loop():
 				cv2.imshow(win, img)
 				cv2.waitKey(1)
 			# await asyncio.sleep(1)
-			cmd, buffer = tty_getData("> ", buffer)
+			cmd, buffer = tty_getData(buffer)
 			if cmd is not None:
-				input_async(cmd)
+				input_async("> ", cmd)
 				if cmd.lower() in {'quit'}:
 					break
 				cmd = None
+				sys.stdout.write("> ")
+				sys.stdout.flush()
 		
 	finally:
 		# Restore tty settings
