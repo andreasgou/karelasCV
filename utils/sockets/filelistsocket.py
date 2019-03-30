@@ -27,9 +27,12 @@ class StreamFileListClient(Thread):
 	def init_socket(self):
 		try:
 			imagePaths = list(paths.list_images(self.path))
+			print(imagePaths, self.path)
 			# aqcuire first image dimensions and use them for all
 			imagePath = imagePaths[0].replace("\\ ", " ")
 			img = cv2.imread(imagePath)
+			if img is None:
+				raise Exception('Image not found?', imagePath)
 			if self.dim is None:
 				self.dim = img.shape[:2]
 			else:

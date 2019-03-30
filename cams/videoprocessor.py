@@ -219,6 +219,7 @@ class VideoProcessor:
 			self.queue.put(("Histogram", hist))
 			# cv2.imshow("Histogram", hist)
 			
+	bit4 = bitarray[]
 	def mouse_control(self, event, x, y, flags, param):
 		# if the left mouse button was clicked, record the starting
 		# (x, y) coordinates and indicate that cropping is being
@@ -304,6 +305,7 @@ class VideoProcessor:
 			# key = cv2.waitKey(1) & 0xFF
 		
 		elif event == cv2.EVENT_MOUSEMOVE:
+			sys.stdout.write("-")
 			if self.cropping:
 				tl = self.refPt[0]
 				br = (x, y)

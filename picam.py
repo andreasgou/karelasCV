@@ -307,10 +307,12 @@ def show_help():
 	<host> : target host or IP.
 	<port> : tcp port number, default=5501.
 	<path> : path name to folder containing images.
+	<fit>  :
 	<ipcam>: 0|1|2 (default=0)
 			 0: connect to raspberry pi running picam-server.py  (requires --host and --port)
 			 1: connect to android device running IP webcam app (requires --host and --port)
 			 2: specify folder path to display images in rotation (requires --path)
+			 3: opev build-in camera for streaming or a video file on disk (if --path specified)
 	
 Default commands:
 	start       : starts video feed from server
@@ -524,9 +526,10 @@ ap.add_argument("--host", type=str, required=False, help="host address")
 ap.add_argument("--port", type=int, required=False, help="port number")
 ap.add_argument("--path", type=str, required=False, help="path to image folder")
 ap.add_argument("--ipcam", type=int, default=3, help="camera type")
-ap.add_argument("--wsize", type=int, nargs=2, default=[320, 240], help="preview monitor dimensions")
+ap.add_argument("--wsize", type=int, nargs=2, default=[320, 240],
+                help="set preview monitor dimensions")
 ap.add_argument("--fit", type=bool, nargs='?', const=True, default=False,
-                help="a resize filter is added to match preview monitor dimensions")
+                help="a resize filter is added to match with preview monitor dimensions")
 args = ap.parse_args()
 
 # Create global variables and classes
