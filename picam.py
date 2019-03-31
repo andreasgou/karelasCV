@@ -16,6 +16,7 @@ from utils.sockets.filelistsocket import StreamFileListClient
 from utils.sockets.videosocket import StreamVideoClient
 
 from utils import helper_visuals as iv
+from utils import term
 
 # Thread free for UI
 # import matplotlib
@@ -488,6 +489,7 @@ def main_loop():
 
 	try:
 		while cmd is None:
+			term.waitcursor()
 			while not video_monitor.queue.empty():
 				win, img = video_monitor.queue.get()
 				cv2.imshow(win, img)

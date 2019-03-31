@@ -11,10 +11,12 @@ import queue
 
 from utils import helper_visuals as iv
 from utils import cvhist as hf
+from utils import term
 
 # Thread free for UI
 # import matplotlib
 # matplotlib.use('TkAgg')
+
 
 class VideoProcessor:
 	
@@ -68,6 +70,8 @@ class VideoProcessor:
 		self.socket.pause_time = self.socket.pause_time + time.time() - self.pause_start
 	
 	def use(self, dialog, length, stream):
+		term.waitcursor()
+
 		if self.pause_frame:
 			return
 		
@@ -219,7 +223,6 @@ class VideoProcessor:
 			self.queue.put(("Histogram", hist))
 			# cv2.imshow("Histogram", hist)
 			
-	bit4 = bitarray[]
 	def mouse_control(self, event, x, y, flags, param):
 		# if the left mouse button was clicked, record the starting
 		# (x, y) coordinates and indicate that cropping is being
@@ -305,11 +308,12 @@ class VideoProcessor:
 			# key = cv2.waitKey(1) & 0xFF
 		
 		elif event == cv2.EVENT_MOUSEMOVE:
-			sys.stdout.write("-")
+			# term.waitcursor()
 			if self.cropping:
 				tl = self.refPt[0]
 				br = (x, y)
 				print("\r[debug] mask dimensions: {}x{}    ".format(br[0]-tl[0], br[1]-tl[1]), end='')
+				sys.stdout.flush()
 				img = self.save_frame.copy()
 				cv2.rectangle(img, tl, br, (255, 0, 0), 1)
 				self.imgshow(img)

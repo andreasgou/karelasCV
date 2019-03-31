@@ -1,4 +1,4 @@
-# File system helper funtions
+# File system helper functions
 import pickle
 import os
 
