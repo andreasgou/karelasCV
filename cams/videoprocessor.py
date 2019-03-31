@@ -28,8 +28,11 @@ class VideoProcessor:
 		self.action_args = None
 		self.action_time = None
 		self.double_monitor = False
+		
 		self.last_frame = None
 		self.save_frame = None
+		self.cache = None
+		
 		self.pause_frame = False
 		self.histogram = None
 		self.camtype = 0
@@ -60,6 +63,7 @@ class VideoProcessor:
 		cv2.waitKey(1)
 
 	def pause(self):
+		self.cache = self.save_frame.copy()
 		self.pause_frame = True
 		self.socket.pause = True
 		self.pause_start = time.time()
@@ -73,53 +77,55 @@ class VideoProcessor:
 		term.waitcursor()
 
 		if self.pause_frame:
-			return
-		
-		if self.camtype == 1:
-			self.last_frame = stream
-		elif self.camtype >= 2:
-			self.last_frame = stream
+			img = self.cache
+			time.sleep(0.04)
+			# return
 		else:
-			image = Image.open(stream)
-			# convert to numpy array and flip channels R-B or B-R
-			self.last_frame = iv.Pil2Numpy(image, 3)
-		
-		img = self.last_frame.copy()
-		self.save_frame = img
-		
-		# persistent processors
-		for plugin in self.plugins:
-			try:
-				img = plugin[0](self, img, plugin)
-				self.save_frame = img
-			except:
-				exc_type, exc_value, exc_traceback = sys.exc_info()
-				print("[error] ", exc_type, exc_value)
-				traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout)
-				print("\n[warning] Plugin {} is not functional, trying to remove..".format(plugin[1]))
-				self.remove_plugin(plugin[0])
-				
-		if self.action:
-			itr = 0
-			try:
-				dt = datetime.datetime.now()
-				if (dt - self.action_time).total_seconds() > 0:
-					print("\r[info] running action: {}\n> ".format(self.action_args), end='')
-					self.action(self, img, self.action_args)
-					if "repeat" in self.action_args:
-						if "idle" in self.action_args:
-							idx = self.action_args.index("idle") + 1
-							idle = int(self.action_args[idx])
-							self.action_time += datetime.timedelta(seconds=idle)
-						idx = self.action_args.index("repeat") + 1
-						itr = int(self.action_args[idx]) - 1
-					if itr <= 0:
-						self.action = None
-						self.action_args = None
-					else:
-						self.action_args[idx] = itr
-			except:
-				print("[error]: ", sys.exc_info()[0], sys.exc_info()[1])
+			if self.camtype == 1:
+				self.last_frame = stream
+			elif self.camtype >= 2:
+				self.last_frame = stream
+			else:
+				image = Image.open(stream)
+				# convert to numpy array and flip channels R-B or B-R
+				self.last_frame = iv.Pil2Numpy(image, 3)
+			
+			img = self.last_frame.copy()
+			self.save_frame = img
+			
+			# persistent processors
+			for plugin in self.plugins:
+				try:
+					img = plugin[0](self, img, plugin)
+					self.save_frame = img
+				except:
+					exc_type, exc_value, exc_traceback = sys.exc_info()
+					print("[error] ", exc_type, exc_value)
+					traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout)
+					print("\n[warning] Plugin {} is not functional, trying to remove..".format(plugin[1]))
+					self.remove_plugin(plugin[0])
+					
+			if self.action:
+				itr = 0
+				try:
+					dt = datetime.datetime.now()
+					if (dt - self.action_time).total_seconds() > 0:
+						print("\r[info] running action: {}\n> ".format(self.action_args), end='')
+						self.action(self, img, self.action_args)
+						if "repeat" in self.action_args:
+							if "idle" in self.action_args:
+								idx = self.action_args.index("idle") + 1
+								idle = int(self.action_args[idx])
+								self.action_time += datetime.timedelta(seconds=idle)
+							idx = self.action_args.index("repeat") + 1
+							itr = int(self.action_args[idx]) - 1
+						if itr <= 0:
+							self.action = None
+							self.action_args = None
+						else:
+							self.action_args[idx] = itr
+				except:
+					print("[error]: ", sys.exc_info()[0], sys.exc_info()[1])
 		
 		self.imgshow(img)
 	
@@ -227,6 +233,7 @@ class VideoProcessor:
 		# if the left mouse button was clicked, record the starting
 		# (x, y) coordinates and indicate that cropping is being
 		# performed
+		# term.waitcursor(run='yes')
 		if event == cv2.EVENT_LBUTTONDOWN:
 			# if self.winsize != self.last_frame.shape[:2]:
 			if self.winsize != self.save_frame.shape[:2]:
@@ -308,7 +315,6 @@ class VideoProcessor:
 			# key = cv2.waitKey(1) & 0xFF
 		
 		elif event == cv2.EVENT_MOUSEMOVE:
-			# term.waitcursor()
 			if self.cropping:
 				tl = self.refPt[0]
 				br = (x, y)
@@ -317,6 +323,7 @@ class VideoProcessor:
 				img = self.save_frame.copy()
 				cv2.rectangle(img, tl, br, (255, 0, 0), 1)
 				self.imgshow(img)
+				self.cache = img.copy()
 				return
 			
 			if self.move:
@@ -328,6 +335,7 @@ class VideoProcessor:
 				img = self.save_frame.copy()
 				cv2.rectangle(img, tl, br, (255, 0, 0), 1)
 				self.imgshow(img)
+				self.cache = img.copy()
 				return
 		
 		elif event == cv2.EVENT_RBUTTONDOWN:

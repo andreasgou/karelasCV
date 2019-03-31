@@ -258,6 +258,9 @@ def video_stop():
 	global video_so, video_monitor
 	
 	if video_so:
+		if video_monitor.pause_frame:
+			video_monitor.unpause()
+
 		if video_so.status != 'init':
 			video_so.status = 'purge'
 		# video_so.set_consumer(None)
@@ -377,7 +380,7 @@ def tty_getData(buffer):
 
 
 # async def input_async(prompt):
-def input_async(prompt, q):
+def cmd_exec(q):
 
 	# q = ""
 	# while q.lower() not in {'quit'}:
@@ -484,25 +487,28 @@ def main_loop():
 
 	buffer = ""
 	cmd = None
-	sys.stdout.write("> ")
+	sys.stdout.write("[ ]> ")
 	sys.stdout.flush()
 
 	try:
 		while cmd is None:
-			term.waitcursor()
 			while not video_monitor.queue.empty():
+				# term.waitcursor(run='yes')
 				win, img = video_monitor.queue.get()
 				cv2.imshow(win, img)
 				cv2.waitKey(1)
 			# await asyncio.sleep(1)
 			cmd, buffer = tty_getData(buffer)
+			if cmd is None and len(buffer) > 0:
+				term.waitcursor(run='no')
 			if cmd is not None:
-				input_async("> ", cmd)
+				cmd_exec(cmd)
 				if cmd.lower() in {'quit'}:
 					break
 				cmd = None
-				sys.stdout.write("> ")
+				sys.stdout.write("[ ]> ")
 				sys.stdout.flush()
+				term.waitcursor(run='yes')
 		
 	finally:
 		# Restore tty settings
@@ -513,7 +519,7 @@ def main_loop():
 async def main():
 	await asyncio.gather(
 		display_img(),
-		input_async("> ")
+		cmd_exec("> ")
 	)
 
 

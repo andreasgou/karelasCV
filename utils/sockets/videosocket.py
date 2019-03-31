@@ -69,6 +69,9 @@ Frames per second: {}
 			if not self.capture.isOpened():
 				break
 			if self.pause:
+				if self.consumer is not None:
+					self.consumer(self, None, None)
+				# time.sleep(self.idletime)
 				continue
 
 			try:

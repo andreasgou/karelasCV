@@ -47,6 +47,8 @@ class StreamClient(Thread):
 	def run(self):
 		while True:
 			if self.pause:
+				if self.consumer is not None:
+					self.consumer(self, None, None)
 				continue
 			
 			(ln, data) = binCatch(self.pipe)
