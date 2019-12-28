@@ -307,46 +307,59 @@ def video_histogram(vm, args):
 
 
 def show_help():
-	print("""Usage: python3 picam.py [--host <host>] [--port <port>] [--path <path>] [--ipcam <ipcam>]
-	<host> : target host or IP.
-	<port> : tcp port number, default=5501.
-	<path> : path name to folder containing images.
-	<fit>  :
-	<ipcam>: 0|1|2 (default=0)
-			 0: connect to raspberry pi running picam-server.py  (requires --host and --port)
-			 1: connect to android device running IP webcam app (requires --host and --port)
-			 2: specify folder path to display images in rotation (requires --path)
-			 3: opev build-in camera for streaming or a video file on disk (if --path specified)
-	
-Default commands:
-	start       : starts video feed from server
-	stop        : stops video feed
-	quit        : quits program
-	histogram   : curve|lines|equalize|curve-gray|normalize|off
+	print("""
+Usage: python3 picam.py [--host <host>] [--port <port>] [--path <path>] [--ipcam <ipcam>]
+    <host> : target host or IP.
+    <port> : tcp port number, default=5501.
+    <path> : path name to folder containing images.
+    <fit>  :
+    <ipcam>: 0|1|2 (default=0)
+             0: connect to raspberry pi running picam-server.py  (requires --host and --port)
+             1: connect to android device running IP webcam app (requires --host and --port)
+             2: specify folder path to display images in rotation (requires --path)
+             3: opev build-in camera for streaming or a video file on disk (if --path specified)
 
-	Plugin commands, executed sequentially by order of definition:
-	grid        : makes a 16x16 grid with stroke 1 with gridline color of (0,0,0).
-	checker     : checkerboard overlay of box size 64x64 (black-transparent boxes)
-	filter      : <name> [<args>]
-				  Applies a named filter on the image.
-				"blur"      : Soft blur 3x3 kernel
-				"blur-more" : Hard blur  3x3 kernel
-				"sharpen"   : Sharpen
-				"laplacian" : Laplacian
-				"sobel-x"   : SobelX
-				"sobel-y"   : SobelY
-				"emboss"    : Emboss
-				"sobel"     : <kernel size>: reveal outlines. Kernel size: [1|3|5|..]
-				"threshold" : (normal|otsu) [thresh] | (adapt-mean|adapt-gauss) [neighbors]
-							  thresh: 0-255 default 0
-							  neighbors: 3, 5, 7, 9,.. (default 11)
-				"canny"     : Canny
-				"equalizer" : Equalizer
-				"contours"  : Contours
-				"resize"    : Resize
-				"faces"     : Face detection
-				"none"      : Remove filter
-				"list"      : List active filters
+Default commands:
+    start       starts video capture using the <ipcam> interface
+    stop        stops video capture
+    quit        quits program
+    help        shows this help
+    pause       pauses capture
+                Drops incoming frames locally and pauses on the last frame.
+    resize width height
+                resize the output screen to given width and height
+    histogram   curve | lines | equalize | curve-gray | normalize | off
+                Displays histogram in a new window
+
+Plugin commands, executed sequentially by order of definition:
+    grid        makes a 16x16 grid with stroke 1 with gridline color of (0,0,0).
+    checker     checkerboard overlay of box size 64x64 (black-transparent boxes)
+    filter      <name> [<args>]
+                Applies a named filter on the image.
+                "blur"      : Soft blur 3x3 kernel
+                "blur-more" : Hard blur  3x3 kernel
+                "sharpen"   : Sharpen
+                "laplacian" : Laplacian
+                "sobel-x"   : SobelX
+                "sobel-y"   : SobelY
+                "emboss"    : Emboss
+                "sobel"     : <kernel size>: reveal outlines. Kernel size: [1|3|5|..]
+                "threshold" : (normal|otsu) [thresh] | (adapt-mean|adapt-gauss) [neighbors]
+                              thresh: 0-255 default 0
+                              neighbors: 3, 5, 7, 9,.. (default 11)
+                "canny"     : Canny
+                "equalizer" : Equalizer
+                "contours"  : Contours
+                "resize"    : Resize
+                "faces"     : Face detection
+                "none"      : Remove filter
+                "list"      : List active filters
+    grab        grabs the output into file
+    blocks
+    windows
+    stich
+    qui
+    action stop
 """)
 
 
@@ -530,14 +543,14 @@ ap = argparse.ArgumentParser(
 	description="PiCam computer vision remote camera",
 	formatter_class=MyFormatter)
 
-ap.add_argument("--host", type=str, required=False, help="host address")
-ap.add_argument("--port", type=int, required=False, help="port number")
-ap.add_argument("--path", type=str, required=False, help="path to image folder")
-ap.add_argument("--ipcam", type=int, default=3, help="camera type")
+ap.add_argument("--host", type=str, required=False, help="Host address")
+ap.add_argument("--port", type=int, required=False, help="Port number")
+ap.add_argument("--path", type=str, required=False, help="Path to image folder")
+ap.add_argument("--ipcam", type=int, choices=[0, 1, 2, 3], default=3, help="Camera type")
 ap.add_argument("--wsize", type=int, nargs=2, default=[320, 240],
-                help="set preview monitor dimensions")
+                help="Set preview monitor dimensions")
 ap.add_argument("--fit", type=bool, nargs='?', const=True, default=False,
-                help="a resize filter is added to match with preview monitor dimensions")
+                help="Adds the 'resize' filter to match with preview monitor dimensions")
 args = ap.parse_args()
 
 # Create global variables and classes
@@ -584,110 +597,9 @@ if args.fit and cam_type != 2:
 	plugin_filter(video_monitor, "filter resize {} {}".format(winsize[0], winsize[1]).split())
 
 # asyncio.run(main())
-
 main_loop()
 
-
-
-# Enter interactive console mode.
-# Type 'quit' to exit
-
-# q = ""
-# while q.lower() not in {'quit'}:
-# 	q = input("> ")
-# 	if force_quit:
-# 		quit()
-# 	if q.rstrip() != '':
-# 		qr = q.rstrip().split(' ')
-# 		q = ' '.join(str(x) for x in qr)
-#
-# 		# video states
-# 		if qr[0] == 'quit':
-# 			video_stop()
-# 			if cam_type == 0:
-# 				# send and wait for the reply
-# 				hostso.send(q, wait=True)
-#
-# 		elif qr[0] == 'start':
-# 			video_start(pihost, piport, pipath, hw_quit, args)
-# 		elif qr[0] == 'stop':
-# 			video_stop()
-# 		elif qr[0] == 'pause':
-# 			video_pause()
-# 		elif qr[0] == 'resize':
-# 			video_resize(video_monitor, qr)
-# 		elif qr[0] == 'histogram':
-# 			video_histogram(video_monitor, qr)
-#
-# 		# Plugins (one condition)
-# 		elif qr[0] == 'grid':
-# 			video_monitor.append_plugin(plugin_grid, qr)
-# 			print("Plugin {} enabled".format(q))
-#
-# 		elif qr[0] == 'checker':
-# 			video_monitor.append_plugin(plugin_checker, qr)
-# 			print("Plugin {} enabled".format(q))
-#
-# 		elif qr[0] == 'filter':
-# 			if len(qr) < 2:
-# 				print("[error]: Filter not defined\nUsage: filter {}"
-# 				      .format("|".join(key for key in filter_bank)))
-# 			elif qr[1] not in filter_bank:
-# 				print("[error]: Invalid filter {}\nUsage: filter {}> "
-# 				      .format(qr[1], "|".join(key for key in filter_bank)))
-# 			else:
-# 				plugin_filter(video_monitor, qr)
-#
-# 		elif qr[0] == 'roi':
-# 			hdr_roi_select(video_monitor, video_monitor.save_frame, None)
-#
-# 		# Actions (two words)
-# 		elif qr[0] == 'grab':
-# 			video_monitor.set_action(action_grab, qr)
-# 		elif qr[0] == 'blocks':
-# 			video_monitor.set_action(action_blocks, qr)
-# 		elif qr[0] == 'windows':
-# 			video_monitor.set_action(action_windows, qr)
-# 		elif qr[0] == 'stitch':
-# 			video_monitor.set_action(action_stitching, qr)
-# 		elif qr[0] == 'gui':
-# 			# TODO: action GUI under development
-# 			action_gui()
-# 		elif qr[0] == 'help':
-# 			show_help()
-# 		elif q == 'action stop':
-# 			# Cancel running action
-# 			video_monitor.set_action(None, qr)
-# 			print("[info] active action canceled")
-#
-# 		# Anything else just send it over
-# 		else:
-# 			if cam_type == 0:
-# 				# send and wait for the reply
-# 				hostso.send(q, wait=True)
-# 			elif cam_type == 1:
-# 				if qr[0] in ['get', 'set']:
-# 					video_so.set_command(qr[0], qr)
-# 			elif cam_type == 2:
-# 				if q.startswith('set idle'):
-# 					if len(qr) > 2:
-# 						video_so.idletime = float(qr[2])
-# 			elif cam_type == 3:
-# 				if q.startswith('set res'):
-# 					video_so.set_command("res", [qr[2], qr[3]])
-# 				elif q.startswith('set idle'):
-# 					if len(qr) > 2:
-# 						video_so.idletime = float(qr[2])
-# 	else:
-# 		# if object tracker (CMT filter) is active, switch debug on/off by hitting return
-# 		if video_monitor is not None:
-# 			plugin = video_monitor.get_plugin(hdr_tracker_cmt)
-# 			if plugin is not None:
-# 				plugin[2][1] = not plugin[2][1]
-		
-
 # Close connection
-
 if cam_type == 0:
 	hostso.close()
 print("Bye..")
