@@ -202,8 +202,13 @@ tstamp = time.time()
 # Create global variables and classes
 # -----------------------------------
 picam = None
-f = open('camera-settings.json', 'r')
-picam_conf = json.load(f)
+picam_conf = None
+try:
+	f = open('camera-settings.json', 'r')
+	picam_conf = json.load(f)
+except FileNotFoundError as fnf:
+	print("5S: file not found. Generating initial version")
+
 if not picam_conf:
     picam_conf = {'resolution'   : (1024, 768),
                   'iso'          : 0,

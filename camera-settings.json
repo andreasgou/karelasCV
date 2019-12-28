@@ -1,0 +1,22 @@
+{
+    "saturation": 0,
+    "flash_mode": "off",
+    "shutter_speed": 1998798,
+    "drc_strength": "high",
+    "sharpness": 0,
+    "iso": 0,
+    "resolution": "640x480",
+    "contrast": 0,
+    "exposure_compensation": 0,
+    "file_name": "camset-night-room.json",
+    "brightness": 50,
+    "zoom": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+    ],
+    "awb_mode": "auto",
+    "sensor_mode": 3,
+    "exposure_mode": "off"
+}
