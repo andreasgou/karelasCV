@@ -1,22 +1,24 @@
 {
-    "saturation": 0,
-    "flash_mode": "off",
-    "shutter_speed": 1998798,
-    "drc_strength": "high",
-    "sharpness": 0,
-    "iso": 0,
-    "resolution": "640x480",
-    "contrast": 0,
-    "exposure_compensation": 0,
-    "file_name": "camset-night-room.json",
-    "brightness": 50,
+    "sensor_mode": 2,
+    "framerate": 5.0,
+    "resolution": "320x240",
     "zoom": [
         0.0,
         0.0,
         1.0,
         1.0
     ],
+    "drc_strength": "high",
+    "file_name": "camset-night-room.json",
+    "video_port": true,
+    "iso": 0,
+    "exposure_compensation": 0,
+    "shutter_speed": 199779,
+    "exposure_mode": "auto",
     "awb_mode": "auto",
-    "sensor_mode": 3,
-    "exposure_mode": "off"
+    "brightness": 50,
+    "contrast": 0,
+    "saturation": 0,
+    "flash_mode": "off",
+    "sharpness": 0
 }
