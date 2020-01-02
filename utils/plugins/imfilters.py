@@ -28,7 +28,7 @@ def plugin_filter(proc, args):
 	
 	filtr = parse_args(args)
 
-	hdr = filter_bank[filtr.get("filter")]
+	hdr = filter_bank[filtr.get("filter")]["handler"]
 	hdr_type = type(hdr).__name__
 	
 	if hdr_type == 'function':
@@ -79,6 +79,11 @@ def plugin_filter(proc, args):
 		elif hdr == 'list':
 			for plugin in proc.plugins:
 				print(plugin[1])
+		elif hdr == 'help':
+			print("\nDisplaying available filters:\n------------------------------")
+			for key in filter_bank:
+				name = "{:<15}".format(key)
+				print("%s: %s" % (name, filter_bank[key]["desc"]))
 
 
 # construct average blurring kernels used to smooth an image
@@ -806,42 +811,55 @@ def hdr_patch(proc, img, plugin):
 
 	return imout
 
+
 # construct the kernel bank, a list of functions applying kernels or filters
 filter_bank = {
-	"blur"      : hdr_smallBlur,
-	"blur-more" : hdr_largeBlur,
-	"gaussian"  : hdr_gaussian,
-	"sharpen"   : hdr_sharpen,
-	"laplacian" : hdr_laplacian,
-	"sobel-x"   : hdr_sobelX,
-	"sobel-y"   : hdr_sobelY,
-	"emboss"    : hdr_emboss,
-	"sobel"     : hdr_sobel,
-	"threshold" : hdr_threshold,
-	"canny"     : hdr_canny,
-	"inverse"   : hdr_inverse_colors,
-	"equalizer" : hdr_equalizer,
-	"noise"     : hdr_add_noise,
-	"contours"  : hdr_contours,
-	"erode"     : hdr_erosion,
-	"dilate"    : hdr_dilation,
-	"grid"      : plugin_grid,
-	"resize"    : hdr_resize,
-	"rotate"    : hdr_rotate,
-	"faces"     : hdr_face_detection,
-	"thermo"    : hdr_thermo_detection,
-	"numbers"   : hdr_num_detection,
-	"cmt"       : hdr_tracker_cmt,
-	"tracker"   : hdr_tracker,
-	"roi"       : hdr_roi_select,
-	"harris"    : hdr_harris_corner,
-	"harris-sp" : hdr_harris_corner_subpixel,
-	"good-feat" : hdr_good_features_to_track,
-	"deskew"    : hdr_deskew,
-	"patch"     : hdr_patch,
-	"none"      : "remove",
-	"load"      : "load",
-	"save"      : "save",
-	"list"      : "list"
+	"blur"      : { "handler": hdr_smallBlur, "desc": "Soft blur 3x3 kernel" },
+	"blur-more" : { "handler": hdr_largeBlur, "desc": "Hard blur  3x3 kernel" },
+	"gaussian"  : { "handler": hdr_gaussian, "desc": "Classic gaussian blur" },
+	"sharpen"   : { "handler": hdr_sharpen, "desc": "Sharpen" },
+	"laplacian" : { "handler": hdr_laplacian, "desc": "Laplacian filter" },
+	"sobel"     : { "handler": hdr_sobel, "desc": "{}{:17}{}{:<17}{}".format(
+		"<kernel size>: reveal outlines\n",
+		" ", "Apply sobel in both directions.\n",
+		" ", "<kernel-size> (odd numbers only): [1|3|5|..]")
+					},
+	"sobel-x"   : { "handler": hdr_sobelX, "desc": "Apply sobel in x direction" },
+	"sobel-y"   : { "handler": hdr_sobelY, "desc": "Apply sobel in y direction" },
+	"emboss"    : { "handler": hdr_emboss, "desc": "Emboss" },
+	"threshold" : { "handler": hdr_threshold, "desc": "{}{:<17}{}{:<17}{}".format(
+		"(normal|otsu) [thresh] | (adapt-mean|adapt-gauss) [neighbors]\n",
+		" ", "thresh: 0-255, default 0\n",
+		" ", "neighbors (odd numbers only): 3, 5, 7, 9,.., default 11")
+					},
+	"canny"     : { "handler": hdr_canny, "desc": "Canny" },
+	"inverse"   : { "handler": hdr_inverse_colors, "desc": "Description" },
+	"equalizer" : { "handler": hdr_equalizer, "desc": "Equalizer" },
+	"noise"     : { "handler": hdr_add_noise, "desc": "Description" },
+	"contours"  : { "handler": hdr_contours, "desc": "Contours" },
+	"erode"     : { "handler": hdr_erosion, "desc": "Description" },
+	"dilate"    : { "handler": hdr_dilation, "desc": "Description" },
+	"grid"      : { "handler": plugin_grid, "desc": "Description" },
+	"resize"    : { "handler": hdr_resize, "desc": "Post resize frames" },
+	"rotate"    : { "handler": hdr_rotate, "desc": "Description" },
+	"faces"     : { "handler": hdr_face_detection, "desc": "Description" },
+	"thermo"    : { "handler": hdr_thermo_detection, "desc": "Description" },
+	"numbers"   : { "handler": hdr_num_detection, "desc": "Description" },
+	"cmt"       : { "handler": hdr_tracker_cmt, "desc": "Description" },
+	"tracker"   : { "handler": hdr_tracker, "desc": "Description" },
+	"roi"       : { "handler": hdr_roi_select, "desc": "Description" },
+	"harris"    : { "handler": hdr_harris_corner, "desc": "Description" },
+	"harris-sp" : { "handler": hdr_harris_corner_subpixel, "desc": "Description" },
+	"good-feat" : { "handler": hdr_good_features_to_track, "desc": "Description" },
+	"deskew"    : { "handler": hdr_deskew, "desc": "Description" },
+	"patch"     : { "handler": hdr_patch, "desc": "Description" },
+	"none"      : { "handler": "remove", "desc": "{}{:<17}{}".format(
+		"Remove all filters.\n",
+		" ", "If none is given after a filter name, it removes this filter only")
+					},
+	"load"      : { "handler": "load", "desc": "Description" },
+	"save"      : { "handler": "save", "desc": "Description" },
+	"list"      : { "handler": "list", "desc": "List active filters" },
+	"help"      : { "handler": "help", "desc": "Description"}
 }
 

@@ -332,28 +332,11 @@ Default commands:
                 Displays histogram in a new window
 
 Plugin commands, executed sequentially by order of definition:
-    grid        makes a 16x16 grid with stroke 1 with gridline color of (0,0,0).
-    checker     checkerboard overlay of box size 64x64 (black-transparent boxes)
     filter      <name> [<args>]
                 Applies a named filter on the image.
-                "blur"      : Soft blur 3x3 kernel
-                "blur-more" : Hard blur  3x3 kernel
-                "sharpen"   : Sharpen
-                "laplacian" : Laplacian
-                "sobel-x"   : SobelX
-                "sobel-y"   : SobelY
-                "emboss"    : Emboss
-                "sobel"     : <kernel size>: reveal outlines. Kernel size: [1|3|5|..]
-                "threshold" : (normal|otsu) [thresh] | (adapt-mean|adapt-gauss) [neighbors]
-                              thresh: 0-255 default 0
-                              neighbors: 3, 5, 7, 9,.. (default 11)
-                "canny"     : Canny
-                "equalizer" : Equalizer
-                "contours"  : Contours
-                "resize"    : Resize
-                "faces"     : Face detection
-                "none"      : Remove filter
-                "list"      : List active filters
+                Type 'filter help' for more info on each filter
+    grid        makes a 16x16 grid with stroke 1 with gridline color of (0,0,0).
+    checker     checkerboard overlay of box size 64x64 (black-transparent boxes)
     grab        grabs the output into file
     blocks
     windows
