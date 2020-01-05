@@ -25,6 +25,9 @@ class DialogClient(Thread):
 				if data:
 					print(data.decode())
 			self.start()
+		except TimeoutError as TOE:
+			self.status = 'failed'
+			print("[error]:", TOE)
 		except ConnectionRefusedError as SRE:
 			self.status = 'failed'
 			print("[error]:", SRE)

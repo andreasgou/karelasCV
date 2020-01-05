@@ -27,6 +27,7 @@ from utils import term
 class MyFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.MetavarTypeHelpFormatter):
 	pass
 
+
 # non-blocking console
 if os.name == 'nt':
 	import msvcrt
@@ -43,6 +44,7 @@ def hw_quit():
 	global force_quit
 	force_quit = True
 	print("Press any key to quit!")
+
 
 # Actions and plugins for VideoProcessor
 # --------------------------------------
@@ -66,7 +68,7 @@ def action_grab(proc, img, args):
 		imout = img[ty:by, tx:bx].copy()
 	else:
 		imout = img.copy()
-
+	
 	cv2.imwrite(pic_name, imout)
 	print("\r[info] picture saved as '{}'\n> ".format(pic_name), end='')
 	return True
@@ -74,6 +76,8 @@ def action_grab(proc, img, args):
 
 # Stitching images side-by-side
 gbl_stitching_img = None
+
+
 def action_stitching(proc, img, args):
 	global gbl_stitching_img
 	
@@ -87,41 +91,42 @@ def action_stitching(proc, img, args):
 	if "repeat" in args:
 		idx = args.index("repeat") + 1
 		itr = int(args[idx]) - 1
-
+	
 	pic_name = "{}.jpg".format(args[1])
 	if gbl_stitching_img is None:
 		gbl_stitching_img = img.copy()
 	else:
 		# TODO: parameterize horizontal/vertical stiching
 		gbl_stitching_img = np.vstack((gbl_stitching_img, img.copy()))
-
+	
 	cv2.imwrite(pic_name, gbl_stitching_img)
 	print("\r[info] picture saved as '{}'\n> ".format(pic_name), end='')
 	if itr == 0:
 		gbl_stitching_img = None
 	return True
 
+
 # Slice image into blocks and save
 def action_blocks(proc, img, args):
 	if len(args) < 4 or \
 			img.shape[1] % int(args[1]) != 0 or \
 			img.shape[0] % int(args[2]) != 0:
-
+		
 		rows = []
 		cols = []
-		for i in range(int(img.shape[0]/2), 1, -1):
+		for i in range(int(img.shape[0] / 2), 1, -1):
 			if img.shape[0] % i == 0:
 				rows.append(i)
-		for i in range(int(img.shape[1]/2), 1, -1):
+		for i in range(int(img.shape[1] / 2), 1, -1):
 			if img.shape[1] % i == 0:
 				cols.append(i)
-
+		
 		print("Usage: blocks <width> <height> <path>")
 		print("Valid block dimensions are:\n  ROWS = {}\n  Block Height = {}\n\n  COLS = {}\n  Block Width = {}"
-			  .format(rows, img.shape[0]//np.array(rows), cols, img.shape[1]//np.array(cols)))
-
+			  .format(rows, img.shape[0] // np.array(rows), cols, img.shape[1] // np.array(cols)))
+		
 		return False
-
+	
 	w = int(args[1])
 	h = int(args[2])
 	path_prefix = args[3]
@@ -134,10 +139,11 @@ def action_blocks(proc, img, args):
 		cnt += 1
 		pic_name = "{}{:04}.jpg".format(path_prefix, cnt)
 		cv2.imwrite(pic_name, p)
-
+	
 	print("\n{} image patches saved in '{}*'\n> ".format(cnt, path_prefix), end='')
 	
 	return True
+
 
 # Sliding window and save
 def action_windows(proc, img, args):
@@ -145,11 +151,11 @@ def action_windows(proc, img, args):
 		print("\rWrong number of parameters")
 		print("Usage: windows <width> <height> <step> <prefix> [in|out] [repeat <times>] [idle <seconds>]\n> ", end='')
 		return False
-
-	dx = int(args[1])   # width
-	dy = int(args[2])   # height
-	ds = int(args[3])   # sliding step
-	pref = args[4]      # output file name prefix
+	
+	dx = int(args[1])  # width
+	dy = int(args[2])  # height
+	ds = int(args[3])  # sliding step
+	pref = args[4]  # output file name prefix
 	if len(args) > 5:
 		margin = int(args[5])
 	else:
@@ -166,20 +172,20 @@ def action_windows(proc, img, args):
 		patches = iv.windows(img, (dy, dx, img.shape[2]), ds)
 	
 	iy, ix = img.shape[:2]
-	rows = iy//ds - dy//ds + 1
-	cols = ix//ds - dx//ds + 1
-
+	rows = iy // ds - dy // ds + 1
+	cols = ix // ds - dx // ds + 1
+	
 	if proc.selection:
 		# compute matrix dimensions of window patches
 		# grab inner selection mask area
 		tx, ty = proc.refPt[0][0] + margin, proc.refPt[0][1] + margin
 		bx, by = proc.refPt[1][0] - margin, proc.refPt[1][1] - margin
-		win_tl = (max(0, (ty//ds) - (dy//ds) + 1), max(0, (tx//ds) - (dx//ds) + 1))
-		win_br = (max(0, (by//ds)), max(0, (bx//ds)))
+		win_tl = (max(0, (ty // ds) - (dy // ds) + 1), max(0, (tx // ds) - (dx // ds) + 1))
+		win_br = (max(0, (by // ds)), max(0, (bx // ds)))
 		print("Selection coordinates over sliding window patches:")
 		print("    rect: ({}, {}) - ({}, {})".format(ty, tx, by, bx))
 		print(" windows: {}, {}".format(win_tl, win_br))
-
+	
 	cnt = 0
 	skip_cnt = 0
 	skip = invert
@@ -199,17 +205,19 @@ def action_windows(proc, img, args):
 		else:
 			skip_cnt += 1
 			print("\rSkipping patch {}> ".format(cnt), end='')
-	print("\n{} image patches saved in 'raw/{}/{}_*.jpg'\n> ".format(cnt-skip_cnt, tm, pref), end='')
+	print("\n{} image patches saved in 'raw/{}/{}_*.jpg'\n> ".format(cnt - skip_cnt, tm, pref), end='')
 	return True
+
 
 def action_gui():
 	pass
+
 
 # App console commands
 # --------------------
 def video_start(pihost, piport, pipath, hw_quit, args):
 	global video_monitor, video_so, winname, winsize, cam_type
-
+	
 	# initialize video stream and player
 	if cam_type == 0:
 		video_so = StreamClient(pihost, piport, hw_quit)
@@ -238,7 +246,7 @@ def video_start(pihost, piport, pipath, hw_quit, args):
 	# video_monitor.camtype = cam_type
 	video_so.set_consumer(video_monitor.use)
 	video_monitor.socket = video_so
-
+	
 	if video_so.init_socket() == 'failed':
 		print("[error]: Unable to create video binary stream!")
 		video_so.close()
@@ -248,11 +256,11 @@ def video_start(pihost, piport, pipath, hw_quit, args):
 			video_monitor.winsize = video_so.dim
 		if cam_type >= 2:
 			video_so.start()
-	
+		
 		if cam_type == 0:
 			# send and wait for the reply
 			hostso.send("start", wait=True)
-			
+
 
 def video_stop():
 	global video_so, video_monitor
@@ -260,17 +268,17 @@ def video_stop():
 	if video_so:
 		if video_monitor.pause_frame:
 			video_monitor.unpause()
-
+		
 		if video_so.status != 'init':
 			video_so.status = 'purge'
 		# video_so.set_consumer(None)
-	
+		
 		if cam_type == 0:
 			# send and wait for the reply
 			hostso.send("stop", wait=True)
 			video_so.status = 'negotiate'
 			hostso.send("close-stream-listener", wait=True)
-
+		
 		video_so.close()
 		cv2.destroyAllWindows()
 		print("Video thread is {}alive".format("" if video_so.is_alive() else "not "))
@@ -286,7 +294,7 @@ def video_pause():
 	else:
 		video_monitor.pause()
 	print("Video preview is {}".format("paused" if video_monitor.pause_frame else "running"))
-	
+
 
 def video_resize(vm, args):
 	global winsize
@@ -353,18 +361,18 @@ def tty_getData(buffer):
 		kb_hit = msvcrt.kbhit()
 	else:
 		kb_hit = select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
-
+	
 	if kb_hit:
 		if os.name == 'nt':
 			c = msvcrt.getch().decode('utf-8')
 		else:
 			c = sys.stdin.read(1)
-
-		if ord(c) == 10 or ord(c) == 13:        # linefeed
+		
+		if ord(c) == 10 or ord(c) == 13:  # linefeed
 			cmd = buffer
 			buffer = ""
 			sys.stdout.write(crlf)
-		elif ord(c) == 127:     # backspace
+		elif ord(c) == 127:  # backspace
 			buffer = buffer[:-1]
 			sys.stdout.write("\b \b")
 		else:
@@ -377,7 +385,6 @@ def tty_getData(buffer):
 
 # async def input_async(prompt):
 def cmd_exec(q):
-
 	# q = ""
 	# while q.lower() not in {'quit'}:
 	# q = await ainput(prompt)
@@ -418,10 +425,10 @@ def cmd_exec(q):
 		elif qr[0] == 'filter':
 			if len(qr) < 2:
 				print("[error]: Filter not defined\nUsage: filter {}"
-				      .format("|".join(key for key in filter_bank)))
+					  .format("|".join(key for key in filter_bank)))
 			elif qr[1] not in filter_bank:
 				print("[error]: Invalid filter {}\nUsage: filter {}> "
-				      .format(qr[1], "|".join(key for key in filter_bank)))
+					  .format(qr[1], "|".join(key for key in filter_bank)))
 			else:
 				plugin_filter(video_monitor, qr)
 		
@@ -471,7 +478,6 @@ def cmd_exec(q):
 			plugin = video_monitor.get_plugin(hdr_tracker_cmt)
 			if plugin is not None:
 				plugin[2][1] = not plugin[2][1]
-		
 
 
 # async def display_img():
@@ -480,12 +486,12 @@ def main_loop():
 	if os.name != 'nt':
 		tty_old_settings = termios.tcgetattr(sys.stdin)
 		tty.setcbreak(sys.stdin.fileno())
-
+	
 	buffer = ""
 	cmd = None
 	sys.stdout.write("[ ]> ")
 	sys.stdout.flush()
-
+	
 	try:
 		while cmd is None:
 			while not video_monitor.queue.empty():
@@ -519,7 +525,6 @@ async def main():
 	)
 
 
-
 # Parse command line arguments
 # ----------------------------
 ap = argparse.ArgumentParser(
@@ -531,9 +536,9 @@ ap.add_argument("--port", type=int, required=False, help="Port number")
 ap.add_argument("--path", type=str, required=False, help="Path to image folder")
 ap.add_argument("--ipcam", type=int, choices=[0, 1, 2, 3], default=3, help="Camera type")
 ap.add_argument("--wsize", type=int, nargs=2, default=[320, 240],
-                help="Set preview monitor dimensions")
+				help="Set preview monitor dimensions")
 ap.add_argument("--fit", type=bool, nargs='?', const=True, default=False,
-                help="Adds the 'resize' filter to match with preview monitor dimensions")
+				help="Adds the 'resize' filter to match with preview monitor dimensions")
 args = ap.parse_args()
 
 # Create global variables and classes
@@ -568,10 +573,11 @@ if cam_type == 1:
 # Connect to Pi host asynchronously
 if cam_type == 0:
 	hostso = DialogClient(pihost, piport, hw_quit)
+	print("Establishing connection with %s..." % pihost)
 	if hostso.init_socket(True) == 'failed':
 		print("Quiting program!")
 		quit()
-	
+
 # Create a video monitor instance
 video_monitor = VideoProcessor(winname, winsize)
 video_monitor.camtype = cam_type

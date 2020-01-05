@@ -814,19 +814,19 @@ def hdr_patch(proc, img, plugin):
 
 # construct the kernel bank, a list of functions applying kernels or filters
 filter_bank = {
-	"blur"      : { "handler": hdr_smallBlur, "desc": "Soft blur 3x3 kernel" },
-	"blur-more" : { "handler": hdr_largeBlur, "desc": "Hard blur  3x3 kernel" },
+	"blur"      : { "handler": hdr_smallBlur, "desc": "Soft blur 7x7 kernel" },
+	"blur-more" : { "handler": hdr_largeBlur, "desc": "Hard blur 21x21 kernel" },
 	"gaussian"  : { "handler": hdr_gaussian, "desc": "Classic gaussian blur" },
-	"sharpen"   : { "handler": hdr_sharpen, "desc": "Sharpen" },
-	"laplacian" : { "handler": hdr_laplacian, "desc": "Laplacian filter" },
+	"sharpen"   : { "handler": hdr_sharpen, "desc": "Sharpen filter (3x3 kernel)" },
+	"laplacian" : { "handler": hdr_laplacian, "desc": "Laplacian filter (3x3 kernel)" },
 	"sobel"     : { "handler": hdr_sobel, "desc": "{}{:17}{}{:<17}{}".format(
 		"<kernel size>: reveal outlines\n",
 		" ", "Apply sobel in both directions.\n",
 		" ", "<kernel-size> (odd numbers only): [1|3|5|..]")
 					},
-	"sobel-x"   : { "handler": hdr_sobelX, "desc": "Apply sobel in x direction" },
-	"sobel-y"   : { "handler": hdr_sobelY, "desc": "Apply sobel in y direction" },
-	"emboss"    : { "handler": hdr_emboss, "desc": "Emboss" },
+	"sobel-x"   : { "handler": hdr_sobelX, "desc": "Apply sobel in x direction (3x3 kernel)" },
+	"sobel-y"   : { "handler": hdr_sobelY, "desc": "Apply sobel in y direction (3x3 kernel)" },
+	"emboss"    : { "handler": hdr_emboss, "desc": "Emboss filter (3x3 kernel)." },
 	"threshold" : { "handler": hdr_threshold, "desc": "{}{:<17}{}{:<17}{}".format(
 		"(normal|otsu) [thresh] | (adapt-mean|adapt-gauss) [neighbors]\n",
 		" ", "thresh: 0-255, default 0\n",
