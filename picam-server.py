@@ -73,7 +73,7 @@ def hw_video_pause(dialog, sock, command=None):
 
 def hw_video_command(dialog, sock, cmd):
 	global picam, picam_conf
-	ret = "Command '{}' executed.".format(cmd[0])
+	ret = "Command '{}' execution..".format(cmd[0])
 	while True:
 		if (cmd[0] == 'start'):
 			hw_video_start(dialog, sock, cmd)
@@ -101,7 +101,7 @@ def hw_video_command(dialog, sock, cmd):
 		ret = "Video command '{}' not found!".format(cmd[0])
 		break
 	
-	ret += "\nCamera state: " + (picam.state if picam else 'n/a')
+	ret += " camera state: " + (picam.state if picam else 'n/a')
 	print(ret)
 	netThrow(sock, ret)
 

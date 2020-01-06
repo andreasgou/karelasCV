@@ -392,6 +392,7 @@ def cmd_exec(q):
 	# q = await ainput(prompt)
 	
 	if force_quit:
+		restore_terminal()
 		quit()
 	if q.rstrip() != '':
 		qr = q.rstrip().split(' ')
@@ -480,10 +481,14 @@ def cmd_exec(q):
 			plugin = video_monitor.get_plugin(hdr_tracker_cmt)
 			if plugin is not None:
 				plugin[2][1] = not plugin[2][1]
-
+		
+		
+tty_old_settings = None
 
 # async def display_img():
 def main_loop():
+	global tty_old_settings
+	
 	# Setup non-blocking console
 	if os.name != 'nt':
 		tty_old_settings = termios.tcgetattr(sys.stdin)
@@ -507,7 +512,7 @@ def main_loop():
 				term.waitcursor(run='no')
 			if cmd is not None:
 				cmd_exec(cmd)
-				if cmd.lower() in {'quit'}:
+				if cmd.lower() in ['quit']:
 					break
 				cmd = None
 				sys.stdout.write("[ ]> ")
@@ -516,8 +521,16 @@ def main_loop():
 		
 	finally:
 		# Restore tty settings
-		if os.name != 'nt':
-			termios.tcsetattr(sys.stdin, termios.TCSADRAIN, tty_old_settings)
+		restore_terminal()
+
+
+def restore_terminal():
+	global tty_old_settings
+
+	# Restore tty settings
+	if os.name != 'nt':
+		termios.tcsetattr(sys.stdin, termios.TCSADRAIN, tty_old_settings)
+	
 
 
 async def main():

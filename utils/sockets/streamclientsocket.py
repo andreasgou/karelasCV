@@ -34,13 +34,13 @@ class StreamClient(Thread):
 			self.start()
 		except (TimeoutError, socket.timeout) as STO:
 			self.status = 'failed'
-			print("[error]:", STO)
+			self.printout("[error]: {}".format(STO))
 		except ConnectionRefusedError as SRE:
 			self.status = 'failed'
-			print("[error]:", SRE)
+			self.printout("[error]: {}".format(SRE))
 		except:
 			self.status = 'failed'
-			print("[error]: protocol failed: ", sys.exc_info()[0])
+			self.printout("[error]: protocol failed: {}".format(sys.exc_info()[0]))
 		
 		return self.status
 	
@@ -55,10 +55,10 @@ class StreamClient(Thread):
 			if self.status == 'purge' and data:
 				# consume all data from the pipe
 				self.pipe.flush()
-				print("[info] (StreamClient.run) : Video stream purged")
+				self.printout("[info]: Video stream purged")
 				continue
 			
-			# print("  ", self.status, ln, data)
+			# self.printout("  ", self.status, ln, data)
 			if data:
 				if self.status == 'negotiate':
 					data = data.getvalue().decode()
@@ -67,7 +67,7 @@ class StreamClient(Thread):
 					elif data == 'quit':
 						break
 					else:
-						print(" ", data)
+						self.printout("  {}".format(data))
 				else:
 					self.consumer(self, ln, data)
 			else:
@@ -77,21 +77,24 @@ class StreamClient(Thread):
 				break
 		
 		self.status = "init"
-		print("Stream socket stopped")
+		self.printout("Stream socket stopped")
 	
 	def set_consumer(self, consumer):
 		self.consumer = consumer
 	
 	def close(self):
-		print("Closing data stream..")
+		self.printout("Closing data stream.. (status='{}')".format(self.status))
 		if self.status != 'failed':
 			self.status == 'purge'
 			self.pipe.flush()
 			self.pipe.close()
 			self.socket.close()
 			self.status = "init"
-		print("Stream socket closed")
+		self.printout("Stream socket closed")
 	
 	def purge_negotiate(self):
 		self.status = 'purge'
+	
+	def printout(self, msg):
+		print(type(self).__name__, msg)
 
