@@ -85,7 +85,7 @@ class StreamClient(Thread):
 	def close(self):
 		self.printout("Closing data stream.. (status='{}')".format(self.status))
 		if self.status != 'failed':
-			self.status == 'purge'
+			# self.status = 'purge'
 			self.pipe.flush()
 			self.pipe.close()
 			self.socket.close()

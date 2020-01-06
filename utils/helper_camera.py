@@ -328,6 +328,7 @@ class PICameraServer(Thread):
 				time.sleep(1)
 		self.stream.flush()
 		self.camera.close()
+		print("Camera closed!")
 		# self.stream = None
 		
 	def set_stream(self, stream):
@@ -365,11 +366,11 @@ class PICameraServer(Thread):
 					if self.state in ['pause', 'closing']:
 						break
 	
-				if self.state == 'closing':
-					break
+			if self.state == 'closing':
+				break
 
 		self.state = "closed"
-		print("PiCamera thread stopped!")
+		print("\nPiCamera thread ended!")
 
 	def pause(self, pause=True):
 		if pause:
