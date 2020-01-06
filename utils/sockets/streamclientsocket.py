@@ -52,7 +52,7 @@ class StreamClient(Thread):
 				continue
 			
 			(ln, data) = binCatch(self.pipe)
-			if self.status == 'purge':
+			if self.status == 'purge' and data:
 				# consume all data from the pipe
 				self.pipe.flush()
 				print("[info] (StreamClient.run) : Video stream purged")

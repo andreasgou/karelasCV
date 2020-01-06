@@ -91,8 +91,8 @@ class DialogServer:
 							self.broadcast_string(stout, sock)
 							stcmd = stin.rstrip().split(' ')
 							cmd = self.commands.get(stcmd[0])
-							if (cmd):
-								print("Executing command '{}' for {}:{}".format(cmd.__name__, host, port))
+							if cmd:
+								print("Executing command '{} {}' for {}:{}".format(cmd.__name__, stcmd[0], host, port))
 								cmd(self, sock, stcmd)
 							
 							netThrow(sock, "--EOS--")

@@ -345,7 +345,9 @@ Plugin commands, executed sequentially by order of definition:
                 Type 'filter help' for more info on each filter
     grid        makes a 16x16 grid with stroke 1 with gridline color of (0,0,0).
     checker     checkerboard overlay of box size 64x64 (black-transparent boxes)
-    grab        grabs the output into file
+    grab        <prefix> [repeat <times>] [idle <seconds>]
+                Grabs the output into file(s)
+                <prefix> [repeat <times>] [idle <seconds>
     blocks
     windows
     stich

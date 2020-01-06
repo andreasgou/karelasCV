@@ -321,7 +321,7 @@ class PICameraServer(Thread):
 			return
 		if self.state == 'streaming':
 			self.state = 'closing'
-			i=0
+			i = 0
 			while self.state != 'closed':
 				i += 1
 				print("Finishing current capture{}".format('.' * i), end='\r')
