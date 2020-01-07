@@ -326,7 +326,8 @@ class PICameraServer(Thread):
 				i += 1
 				print("Finishing current capture{}".format('.' * i), end='\r')
 				time.sleep(1)
-		self.stream.flush()
+		# self.stream.flush()
+		print("Camera closing...")
 		self.camera.close()
 		print("Camera closed!")
 		# self.stream = None
