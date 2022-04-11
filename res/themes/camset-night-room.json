@@ -1,7 +1,7 @@
 {
-    "sensor_mode": 2,
-    "framerate": 1.0,
-    "resolution": "640x480",
+    "sensor_mode": 3,
+    "framerate": 2.0,
+    "resolution": "320x240",
     "zoom": [
         0.0,
         0.0,
@@ -9,12 +9,12 @@
         1.0
     ],
     "drc_strength": "high",
-    "file_name": "camset-day-photo.json",
+    "file_name": "camset-night-room.json",
     "video_port": false,
     "iso": 0,
     "exposure_compensation": 0,
-    "shutter_speed": 99768,
-    "exposure_mode": "auto",
+    "shutter_speed": 999904,
+    "exposure_mode": "off",
     "awb_mode": "auto",
     "brightness": 50,
     "contrast": 0,

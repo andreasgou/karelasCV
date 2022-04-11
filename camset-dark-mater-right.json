@@ -1,0 +1,24 @@
+{
+    "sensor_mode": 3,
+    "framerate": 0.1999969482421875,
+    "resolution": "259x194",
+    "zoom": [
+        0.04998855573357748,
+        0.3499961852445258,
+        0.09999237048905166,
+        0.09999237048905166
+    ],
+    "drc_strength": "high",
+    "file_name": "camset-dark-mater-right.json",
+    "video_port": false,
+    "iso": 0,
+    "exposure_compensation": 0,
+    "shutter_speed": 4999888,
+    "exposure_mode": "off",
+    "awb_mode": "auto",
+    "brightness": 50,
+    "contrast": 50,
+    "saturation": 0,
+    "flash_mode": "off",
+    "sharpness": 0
+}
