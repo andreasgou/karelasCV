@@ -165,7 +165,7 @@ def cmd_saveset(cmd):
 	props['file_name'] = pview['file_name']
 	props['video_port'] = pview['video_port']
 	props.update(pimg)
-	fname = "camset-{}.json".format(cmd[1]) if len(cmd) > 1 else 'camera-settings.json'
+	fname = "res/themes/camset-{}.json".format(cmd[1]) if len(cmd) > 1 else 'camera-settings.json'
 	if len(cmd) > 1:
 		props['file_name'] = fname
 		picam.setfname = fname
@@ -177,7 +177,7 @@ def cmd_saveset(cmd):
 
 def cmd_loadset(cmd):
 	global picam, picam_conf
-	fname = "camset-{}.json".format(cmd[1]) if len(cmd) > 1 else 'camera-settings.json'
+	fname = "res/themes/camset-{}.json".format(cmd[1]) if len(cmd) > 1 else 'res/themes/camera-settings.json'
 	try:
 		f = open(fname, 'r')
 		picam_conf = json.load(f)
@@ -191,7 +191,7 @@ def cmd_loadset(cmd):
 
 
 def cmd_listsets(sock, path=None):
-	templates = sorted(glob.glob("camset*.json"), key=str.lower)
+	templates = sorted(glob.glob("res/themes/camset*.json"), key=str.lower)
 	for f in templates:
 		print(f)
 		netThrow(sock, f)
