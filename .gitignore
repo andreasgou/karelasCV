@@ -5,26 +5,11 @@
 # IntelliJ project files
 .idea
 
-# Andreas data files
-data
-raw
-TODO.txt
+# Andreas customizations
+*.local
+
 **/__pycache__
 *.iml
 out
 gen
-cascades/
-camset-video-best1-meter.json
-lenet_train.py
-object_detection.py
-python3.6-requirements.txt
-shallownet_test.py
-shallownet_train.py
-tester.ipynb
-tester.py
-tester2.py
-tester3.py
-xdata/html/
-xdata/xml/
-xdata/xsd/
-xdata/xsl/
+
