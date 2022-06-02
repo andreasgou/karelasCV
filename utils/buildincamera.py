@@ -22,15 +22,16 @@ class BuildinCamera(Thread):
 		self.streamLength = 0
 		self.stm = time.time()
 		
-		self.conf = {'resolution'   : (1024, 768),
-		             'framerate'    : 5,
-		             'video_port'   : False,
-		             'exposure_mode': 'auto',
-		             'awb_mode'     : 'auto',
-		             'iso'          : 0,
-		             'shutter_speed': 0,
-		             'zoom'         : (0.0, 0.0, 1.0, 1.0)
-		             }
+		self.conf = {
+			'resolution'   : (1024, 768),
+			'framerate'    : 5,
+			'video_port'   : False,
+			'exposure_mode': 'auto',
+			'awb_mode'     : 'auto',
+			'iso'          : 0,
+			'shutter_speed': 0,
+			'zoom'         : (0.0, 0.0, 1.0, 1.0)
+		}
 	
 	def init_socket(self, video_path=None):
 		self.video_path = video_path

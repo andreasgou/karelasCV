@@ -223,16 +223,17 @@ except FileNotFoundError as fnf:
 	print("5S: file not found. Generating initial version")
 
 if not picam_conf:
-	picam_conf = {'resolution': (1024, 768),
-				  'iso': 0,
-				  'exposure_mode': 'auto',
-				  'shutter_speed': 1000000,
-				  'framerate': 5,
-				  'awb_mode': 'auto',
-				  'zoom': (0.0, 0.0, 1.0, 1.0),
-				  'sensor_mode': 3,
-				  'file_name': 'no-file'
-				  }
+	picam_conf = {
+		'resolution': (1024, 768),
+		'iso': 0,
+		'exposure_mode': 'auto',
+		'shutter_speed': 1000000,
+		'framerate': 5,
+		'awb_mode': 'auto',
+		'zoom': (0.0, 0.0, 1.0, 1.0),
+		'sensor_mode': 3,
+		'file_name': 'no-file',
+	}
 # Create and configure camera module instance
 
 # ----------------

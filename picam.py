@@ -317,42 +317,42 @@ def video_histogram(vm, args):
 def show_help():
 	print("""
 Usage: python3 picam.py [--host <host>] [--port <port>] [--path <path>] [--ipcam <ipcam>]
-    <host> : target host or IP.
-    <port> : tcp port number, default=5501.
-    <path> : path name to folder containing images.
-    <fit>  :
-    <ipcam>: 0|1|2 (default=0)
-             0: connect to raspberry pi running picam-server.py  (requires --host and --port)
-             1: connect to android device running IP webcam app (requires --host and --port)
-             2: specify folder path to display images in rotation (requires --path)
-             3: opev build-in camera for streaming or a video file on disk (if --path specified)
+	<host> : target host or IP.
+	<port> : tcp port number, default=5501.
+	<path> : path name to folder containing images.
+	<fit>  :
+	<ipcam>: 0|1|2 (default=0)
+			 0: connect to raspberry pi running picam-server.py  (requires --host and --port)
+			 1: connect to android device running IP webcam app (requires --host and --port)
+			 2: specify folder path to display images in rotation (requires --path)
+			 3: opev build-in camera for streaming or a video file on disk (if --path specified)
 
 Default commands:
-    start       starts video capture using the <ipcam> interface
-    stop        stops video capture
-    quit        quits program
-    help        shows this help
-    pause       pauses capture
-                Drops incoming frames locally and pauses on the last frame.
-    resize width height
-                resize the output screen to given width and height
-    histogram   curve | lines | equalize | curve-gray | normalize | off
-                Displays histogram in a new window
+	start       starts video capture using the <ipcam> interface
+	stop        stops video capture
+	quit        quits program
+	help        shows this help
+	pause       pauses capture
+				Drops incoming frames locally and pauses on the last frame.
+	resize width height
+				resize the output screen to given width and height
+	histogram   curve | lines | equalize | curve-gray | normalize | off
+				Displays histogram in a new window
 
 Plugin commands, executed sequentially by order of definition:
-    filter      <name> [<args>]
-                Applies a named filter on the image.
-                Type 'filter help' for more info on each filter
-    grid        makes a 16x16 grid with stroke 1 with gridline color of (0,0,0).
-    checker     checkerboard overlay of box size 64x64 (black-transparent boxes)
-    grab        <prefix> [repeat <times>] [idle <seconds>]
-                Grabs the output into file(s)
-                <prefix> [repeat <times>] [idle <seconds>
-    blocks
-    windows
-    stich
-    qui
-    action stop
+	filter      <name> [<args>]
+				Applies a named filter on the image.
+				Type 'filter help' for more info on each filter
+	grid        makes a 16x16 grid with stroke 1 with gridline color of (0,0,0).
+	checker     checkerboard overlay of box size 64x64 (black-transparent boxes)
+	grab        <prefix> [repeat <times>] [idle <seconds>]
+				Grabs the output into file(s)
+				<prefix> [repeat <times>] [idle <seconds>
+	blocks
+	windows
+	stitch
+	qui         Under development
+	action stop
 """)
 
 

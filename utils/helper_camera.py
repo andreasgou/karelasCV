@@ -151,31 +151,38 @@ def set_camera_property(picam, index, value, live):
 def camera_settings(picam):
 	camera = picam.camera
 	# properties editable while recording is stopped
-	camprops_init = {'sensor_mode': camera.sensor_mode,
-					 'resolution' : camera.resolution,
-					 'framerate'  : camera.framerate}
+	camprops_init = {
+		'sensor_mode': camera.sensor_mode,
+		'resolution' : camera.resolution,
+		'framerate'  : camera.framerate
+	}
 	# properties for camera light adjustment. Always editable
-	camprops_img = {'iso'                  : camera.iso,
-					'exposure_compensation': camera.exposure_compensation,
-					'shutter_speed'        : camera.shutter_speed,
-					'exposure_mode'        : camera.exposure_mode,
-					'awb_mode'             : camera.awb_mode,
-					'brightness'           : camera.brightness,
-					'contrast'             : camera.contrast,
-					'saturation'           : camera.saturation,
-					'flash_mode'           : camera.flash_mode,
-					'sharpness'            : camera.sharpness}
+	camprops_img = {
+		'iso'                  : camera.iso,
+		'exposure_compensation': camera.exposure_compensation,
+		'shutter_speed'        : camera.shutter_speed,
+		'exposure_mode'        : camera.exposure_mode,
+		'awb_mode'             : camera.awb_mode,
+		'brightness'           : camera.brightness,
+		'contrast'             : camera.contrast,
+		'saturation'           : camera.saturation,
+		'flash_mode'           : camera.flash_mode,
+		'sharpness'            : camera.sharpness
+	}
 	# mode and configuration properties
-	camprops_dep = {'awb_gains'    : camera.awb_gains,
-					'drc_strength' : camera.drc_strength,
-					'zoom'         : camera.zoom,
-					'image_denoise': camera.image_denoise,
-					'image_effect' : camera.image_effect}
+	camprops_dep = {
+		'awb_gains'    : camera.awb_gains,
+		'drc_strength' : camera.drc_strength,
+		'zoom'         : camera.zoom,
+		'image_denoise': camera.image_denoise,
+		'image_effect' : camera.image_effect
+	}
 	# General properties and status
-	camprops_view = {'exposure_speed': camera.exposure_speed,
-					 'video_port'    : picam.video_port,
-					 'file_name'     : picam.setfname}
-
+	camprops_view = {
+		'exposure_speed': camera.exposure_speed,
+		'video_port'    : picam.video_port,
+		'file_name'     : picam.setfname
+	}
 	return camprops_init, camprops_img, camprops_dep, camprops_view
 
 
