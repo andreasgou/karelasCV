@@ -47,6 +47,6 @@ tensorflow-estimator==2.4.0
 termcolor==1.1.0
 tifffile==2021.3.17
 typing-extensions==3.7.4.3
-urllib3==1.26.18
+urllib3==1.26.19
 Werkzeug==3.0.3
 wrapt==1.12.1
