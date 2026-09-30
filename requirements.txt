@@ -23,7 +23,7 @@ Markdown==3.8.1
 matplotlib==3.3.4
 networkx==2.5
 numpy==1.22.0
-oauthlib==3.2.2
+oauthlib==4.0.0
 opencv-python==4.8.1.78
 opt-einsum==3.3.0
 Pillow==12.3.0
